@@ -1,0 +1,461 @@
+/* ============================================================
+   Reza's World — global styles
+   Dark, low-poly / military dusk theme.
+   #ui is a pointer-events:none overlay; children re-enable as needed.
+   ============================================================ */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* palette */
+  --bg: #10151f;
+  --panel: #161d2b;
+  --panel-2: #1d2637;
+  --ink: #e7ecf3;
+  --ink-dim: #9aa7bd;
+  --line: #2c3852;
+  --accent: #e8a23d; /* warm muzzle-flash amber */
+  --accent-2: #6fd3c6; /* cool teal */
+  --danger: #d8613c;
+
+  --radius: 14px;
+  --shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --font: 'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  --mono: 'SFMono-Regular', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
+  touch-action: none;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+#ui > div {
+  position: absolute;
+}
+
+/* ============================================================
+   Loading screen
+   ============================================================ */
+.loading {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+  background: radial-gradient(120% 90% at 50% 30%, #1b2740 0%, #0c111b 70%, #070a11 100%);
+  text-align: center;
+  transition: opacity 400ms ease;
+}
+.loading.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.loading h1 {
+  margin: 0;
+  font-size: clamp(28px, 7vw, 64px);
+  letter-spacing: 0.14em;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-shadow: 0 2px 0 #0b0f18, 0 0 26px rgba(232, 162, 61, 0.25);
+}
+.loading .subtitle {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: clamp(13px, 2.6vw, 18px);
+  letter-spacing: 0.04em;
+}
+.loading .bar {
+  width: min(360px, 72vw);
+  height: 10px;
+  border-radius: 999px;
+  background: #0c1320;
+  border: 1px solid var(--line);
+  overflow: hidden;
+}
+.loading .bar > span {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #f2c877);
+  transition: width 180ms ease;
+}
+.loading .status {
+  color: var(--ink-dim);
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  min-height: 1.2em;
+}
+.loading.ready .status {
+  color: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* ============================================================
+   HUD
+   ============================================================ */
+.hud {
+  top: calc(14px + var(--safe-top));
+  left: calc(14px + var(--safe-left));
+  pointer-events: none;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  background: rgba(16, 21, 31, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  backdrop-filter: blur(6px);
+  transition: opacity 600ms ease;
+  user-select: none;
+}
+.hud.dim {
+  opacity: 0.3;
+}
+.hud .keys {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.hud b {
+  font-family: var(--mono);
+  color: var(--accent);
+  font-weight: 600;
+}
+.hud .seed {
+  position: fixed;
+  right: calc(14px + var(--safe-right));
+  bottom: calc(14px + var(--safe-bottom));
+  left: auto;
+  top: auto;
+  pointer-events: auto;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+  background: rgba(16, 21, 31, 0.55);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 10px;
+  backdrop-filter: blur(6px);
+}
+.hud .seed:hover {
+  color: var(--ink);
+}
+.hud .seed.copied {
+  color: var(--accent-2);
+  border-color: var(--accent-2);
+}
+
+/* ============================================================
+   Intro speech bubble (with CSS tail)
+   ============================================================ */
+.bubble {
+  pointer-events: auto;
+  max-width: min(340px, 78vw);
+  transform: translate(-50%, -100%);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px 12px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+  transition: opacity 200ms ease;
+  will-change: left, top;
+}
+.bubble.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.bubble::after {
+  /* tail */
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid var(--panel);
+  filter: drop-shadow(0 1px 0 var(--line));
+}
+.bubble .who {
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  font-size: 12px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.bubble .dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  align-items: center;
+}
+.bubble .dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--line);
+  display: inline-block;
+}
+.bubble .dots i.on {
+  background: var(--accent);
+}
+.bubble .dots .hint {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--ink-dim);
+  font-style: italic;
+}
+
+/* ============================================================
+   Popup card
+   ============================================================ */
+.popup {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(20px + var(--safe-top)) 20px calc(20px + var(--safe-bottom));
+}
+.popup.open {
+  pointer-events: auto;
+}
+.popup .backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(6, 9, 15, 0.62);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+.popup.open .backdrop {
+  opacity: 1;
+}
+.popup-card {
+  position: relative;
+  width: min(440px, 92vw);
+  max-height: 84vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 22px 18px;
+  transform: scale(0.95);
+  opacity: 0;
+  transition: transform 150ms ease, opacity 150ms ease;
+}
+.popup.open .popup-card {
+  transform: scale(1);
+  opacity: 1;
+}
+.popup-card h2 {
+  margin: 0 0 10px;
+  font-size: 21px;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+}
+.popup-card .blurb {
+  margin: 0 0 14px;
+  color: var(--ink-dim);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.popup-card .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 18px;
+}
+.chip {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--accent-2);
+  background: rgba(111, 211, 198, 0.08);
+  border: 1px solid rgba(111, 211, 198, 0.28);
+  border-radius: 999px;
+  padding: 4px 10px;
+  letter-spacing: 0.02em;
+}
+.popup-card .actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.btn {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  padding: 10px 16px;
+  border: 1px solid var(--line);
+  background: var(--panel-2);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 80ms ease, background 120ms ease, border-color 120ms ease;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+.btn.primary {
+  background: linear-gradient(180deg, #f2b95a, var(--accent));
+  border-color: #f2b95a;
+  color: #201404;
+}
+.btn.primary:hover {
+  filter: brightness(1.05);
+}
+.btn.ghost:hover {
+  border-color: var(--accent-2);
+  color: var(--ink);
+}
+.popup-card .footer {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-dim);
+  opacity: 0.7;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   Touch controls
+   ============================================================ */
+#touch-controls {
+  inset: 0;
+  pointer-events: none;
+}
+.joystick {
+  position: absolute;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 2px solid rgba(231, 236, 243, 0.28);
+  background: rgba(16, 21, 31, 0.35);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  touch-action: none;
+}
+.joystick .nub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  border-radius: 50%;
+  background: rgba(231, 236, 243, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+.fire-btn {
+  position: absolute;
+  right: calc(24px + var(--safe-right));
+  bottom: calc(30px + var(--safe-bottom));
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  pointer-events: auto;
+  touch-action: none;
+  border: 2px solid var(--accent);
+  background: radial-gradient(circle at 50% 40%, rgba(232, 162, 61, 0.35), rgba(16, 21, 31, 0.6));
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  overflow: hidden;
+}
+.fire-btn .sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(rgba(16, 21, 31, 0.72) var(--sweep, 0deg), transparent 0deg);
+  pointer-events: none;
+}
+.rotate-hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(120px + var(--safe-bottom));
+  transform: translateX(-50%);
+  pointer-events: auto;
+  background: rgba(16, 21, 31, 0.75);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  transition: opacity 300ms ease;
+}
+.rotate-hint.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* touch-only visibility helpers modules may use */
+.touch-only {
+  display: none;
+}
+body.is-touch .touch-only {
+  display: block;
+}
