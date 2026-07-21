@@ -31,7 +31,7 @@ import {
 // --- Local (non-config) tuning: aesthetic / spec-described, not named in config.ts ---
 const NORMAL_LERP = 0.1; // ~10%/frame slope alignment (PRD §5.1)
 const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled
-const TRACK_SCROLL_K = 1.6; // tread-texture V-offset advanced per world unit (~roll w/o slip)
+const TRACK_SCROLL_K = 2.5; // tread-texture U-offset advanced per world unit travelled
 const COLLISION_ITERATIONS = 3; // slide-resolution passes per frame
 const RADIUS_PADDING = 1.15; // grow footprint radius a touch beyond half-width
 
@@ -53,8 +53,10 @@ const MUZZLE_FORWARD = new THREE.Vector3(0, 1, 0);
 
 /**
  * A small, seamlessly-tiling tank-tread texture: dark metal with recessed cleat
- * bars. The track meshes are UV-mapped (in Blender) so V runs along the belt, so
- * scrolling this texture's V-offset makes the tread visibly travel along the track.
+ * bars that run ACROSS the track (perpendicular to travel). The track meshes are
+ * UV-mapped (in Blender) so U runs along the belt tangent (the link's short local
+ * X axis) and V across its width, so scrolling this texture's U-offset makes the
+ * tread visibly travel front-to-back along the track.
  */
 function makeTreadTexture(): THREE.CanvasTexture {
   const c = document.createElement('canvas');
@@ -64,15 +66,15 @@ function makeTreadTexture(): THREE.CanvasTexture {
   if (g) {
     g.fillStyle = '#3a3e45'; // dark metal base
     g.fillRect(0, 0, 16, 16);
-    g.fillStyle = '#1f2228'; // recessed cleat bar
-    g.fillRect(0, 0, 16, 7);
+    g.fillStyle = '#1f2228'; // recessed cleat bar (vertical → spans the track width)
+    g.fillRect(0, 0, 7, 16);
     g.fillStyle = '#4b515a'; // cleat highlight edge
-    g.fillRect(0, 7, 16, 2);
+    g.fillRect(7, 0, 2, 16);
   }
   const t = new THREE.CanvasTexture(c);
   t.wrapS = THREE.RepeatWrapping;
   t.wrapT = THREE.RepeatWrapping;
-  t.repeat.set(1, 4); // ~4 cleats per link segment
+  t.repeat.set(2, 1); // cleats repeat along the belt (U), single band across width (V)
   t.colorSpace = THREE.SRGBColorSpace;
   t.magFilter = THREE.NearestFilter; // crisp low-poly cleats
   return t;
@@ -289,8 +291,10 @@ export function createTank(
       // so the axle is the local Z axis (rolling about X would spin them flat).
       const spin = travel * WHEEL_SPIN_PER_UNIT;
       for (const w of wheels) w.rotation.z += spin;
-      // Scroll the tread along the belt (shared texture → all links move together).
-      trackTex.offset.y += travel * TRACK_SCROLL_K;
+      // Scroll the tread along the belt — U is the belt tangent (shared texture,
+      // so all links move together; top/bottom links face opposite ways → the top
+      // scrolls back and the bottom forward, like a real track).
+      trackTex.offset.x += travel * TRACK_SCROLL_K;
     }
 
     object.updateMatrixWorld(true);
