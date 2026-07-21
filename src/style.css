@@ -170,8 +170,7 @@ body {
 .seed {
   position: fixed;
   bottom: calc(14px + var(--safe-bottom));
-  left: 50%;
-  transform: translateX(-50%);
+  left: calc(14px + var(--safe-left));
   right: auto;
   top: auto;
   pointer-events: auto;
