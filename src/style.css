@@ -178,11 +178,11 @@ body {
   font-family: var(--mono);
   font-size: 12px;
   color: var(--ink-dim);
-  background: rgba(16, 21, 31, 0.55);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 5px 10px;
-  backdrop-filter: blur(6px);
+  background: transparent;
+  border: none;
+  padding: 5px 4px;
+  /* Keep it legible over the 3D world without a background plate. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
   z-index: 12;
 }
 .seed:hover {
