@@ -32,6 +32,7 @@ import {
 const NORMAL_LERP = 0.1; // ~10%/frame slope alignment (PRD §5.1)
 const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled
 const TRACK_CYCLE_K = 2.4; // track-belt loop-slots advanced per world unit travelled
+const PIVOT_TRACK_SPEED = 4; // per-track belt speed (world u/s) added/subtracted at full steer
 const COLLISION_ITERATIONS = 3; // slide-resolution passes per frame
 const RADIUS_PADDING = 1.15; // grow footprint radius a touch beyond half-width
 
@@ -127,11 +128,16 @@ export function createTank(
   // its base local X and convert the world-space kick into local (unscaled) units.
   const barrelBaseX = barrelNode ? barrelNode.position.x : 0;
   const recoilLocal = RECOIL_DIST / scale;
-  // Roll the road wheels + drive sprockets while driving.
-  const wheels: THREE.Object3D[] = [];
+  // Road wheels + drive sprockets, split by side so each rolls with its own track
+  // (so they counter-rotate when pivoting).
+  const leftWheels: THREE.Object3D[] = [];
+  const rightWheels: THREE.Object3D[] = [];
   model.traverse((o) => {
     const n = o.name.toLowerCase();
-    if (n.includes('roadwheel') || n.includes('sprocket')) wheels.push(o);
+    if (n.includes('roadwheel') || n.includes('sprocket')) {
+      if (n.includes('left')) leftWheels.push(o);
+      else if (n.includes('right')) rightWheels.push(o);
+    }
   });
 
   // Scrolling track belt: every track mesh shares the 'track' material and is
@@ -174,7 +180,8 @@ export function createTank(
   const rightNodes = collectLinkNodes('right');
   const leftRest = recordRest(leftNodes);
   const rightRest = recordRest(rightNodes);
-  let trackPhase = 0;
+  let leftPhase = 0;
+  let rightPhase = 0;
 
   // ----- State -----
   let heading = 0; // hull yaw about Y (radians)
@@ -333,17 +340,23 @@ export function createTank(
       turretNode.rotation.y -= input.turret();
     }
 
-    // --- Roadwheel / sprocket roll + track-belt scroll, in the direction of travel ---
-    if (Math.abs(travel) > 1e-6) {
-      // Wheels roll about their lateral axle. The model is authored forward = +X,
-      // so the axle is the local Z axis (rolling about X would spin them flat).
-      const spin = travel * WHEEL_SPIN_PER_UNIT;
-      for (const w of wheels) w.rotation.z += spin;
-      // Cycle the belt: every link steps toward the next loop slot (links on the
-      // top of the loop travel back, the bottom forward — like a real track).
-      trackPhase -= travel * TRACK_CYCLE_K;
-      cycleBelt(leftNodes, leftRest, trackPhase);
-      cycleBelt(rightNodes, rightRest, trackPhase);
+    // --- Per-track belt + wheel motion ---
+    // Translation moves both tracks together; steering adds an opposite component
+    // per side, so pivoting counter-rotates them: steer right → right track back,
+    // left track forward (and while driving, the outer track runs faster than the
+    // inner), like a real tank. Wheels roll about local Z (authored forward = +X).
+    const turn = steer * PIVOT_TRACK_SPEED * dt;
+    const leftAdvance = travel + turn;
+    const rightAdvance = travel - turn;
+    if (Math.abs(leftAdvance) > 1e-6) {
+      for (const w of leftWheels) w.rotation.z += leftAdvance * WHEEL_SPIN_PER_UNIT;
+      leftPhase -= leftAdvance * TRACK_CYCLE_K;
+      cycleBelt(leftNodes, leftRest, leftPhase);
+    }
+    if (Math.abs(rightAdvance) > 1e-6) {
+      for (const w of rightWheels) w.rotation.z += rightAdvance * WHEEL_SPIN_PER_UNIT;
+      rightPhase -= rightAdvance * TRACK_CYCLE_K;
+      cycleBelt(rightNodes, rightRest, rightPhase);
     }
 
     object.updateMatrixWorld(true);
