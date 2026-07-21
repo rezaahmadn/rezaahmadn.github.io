@@ -31,7 +31,7 @@ import {
 // --- Local (non-config) tuning: aesthetic / spec-described, not named in config.ts ---
 const NORMAL_LERP = 0.1; // ~10%/frame slope alignment (PRD §5.1)
 const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled
-const TRACK_SCROLL_K = 2.5; // tread-texture U-offset advanced per world unit travelled
+const TRACK_CYCLE_K = 2.4; // track-belt loop-slots advanced per world unit travelled
 const COLLISION_ITERATIONS = 3; // slide-resolution passes per frame
 const RADIUS_PADDING = 1.15; // grow footprint radius a touch beyond half-width
 
@@ -153,6 +153,29 @@ export function createTank(
     }
   });
 
+  // Real belt motion: the 26 link objects per side are identity-parented to
+  // 'Node_*' empties that hold each link's loop-slot transform (the tank was
+  // built procedurally then exported to GLB, which baked the links but kept the
+  // per-slot transforms on the parents). Cycling those node transforms — each
+  // steps to the next slot's transform as the tank drives — moves the whole belt
+  // around the loop. Link index 0..25 is the loop order; the lug children ride along.
+  const collectLinkNodes = (side: 'left' | 'right'): THREE.Object3D[] => {
+    const nodes: THREE.Object3D[] = [];
+    for (let i = 0; ; i++) {
+      const link = model.getObjectByName(`track_${side}_link_${i}`);
+      if (!link || !link.parent) break;
+      nodes.push(link.parent);
+    }
+    return nodes;
+  };
+  const recordRest = (nodes: THREE.Object3D[]) =>
+    nodes.map((n) => ({ p: n.position.clone(), q: n.quaternion.clone() }));
+  const leftNodes = collectLinkNodes('left');
+  const rightNodes = collectLinkNodes('right');
+  const leftRest = recordRest(leftNodes);
+  const rightRest = recordRest(rightNodes);
+  let trackPhase = 0;
+
   // ----- State -----
   let heading = 0; // hull yaw about Y (radians)
   const smoothNormal = new THREE.Vector3(0, 1, 0);
@@ -173,6 +196,31 @@ export function createTank(
   const muzzlePos = new THREE.Vector3();
   const muzzleQuat = new THREE.Quaternion();
   const muzzleDir = new THREE.Vector3();
+  const nodeScratchP = new THREE.Vector3();
+  const nodeScratchQ = new THREE.Quaternion();
+
+  // Shift each link-node one loop-slot along the belt as `phase` advances, reading
+  // from the immutable rest transforms so links follow the real track path (incl.
+  // the curve over the sprockets). frac interpolates between adjacent slots.
+  function cycleBelt(
+    nodes: THREE.Object3D[],
+    rest: Array<{ p: THREE.Vector3; q: THREE.Quaternion }>,
+    phase: number,
+  ): void {
+    const n = nodes.length;
+    if (n === 0) return;
+    const shift = ((phase % n) + n) % n;
+    const whole = Math.floor(shift);
+    const frac = shift - whole;
+    for (let i = 0; i < n; i++) {
+      const a = (i + whole) % n;
+      const b = (a + 1) % n;
+      nodeScratchP.copy(rest[a].p).lerp(rest[b].p, frac);
+      nodeScratchQ.copy(rest[a].q).slerp(rest[b].q, frac);
+      nodes[i].position.copy(nodeScratchP);
+      nodes[i].quaternion.copy(nodeScratchQ);
+    }
+  }
 
   function resolveCollisions(nx: number, nz: number): { x: number; z: number } {
     let x = nx;
@@ -291,10 +339,11 @@ export function createTank(
       // so the axle is the local Z axis (rolling about X would spin them flat).
       const spin = travel * WHEEL_SPIN_PER_UNIT;
       for (const w of wheels) w.rotation.z += spin;
-      // Scroll the tread along the belt — U is the belt tangent (shared texture,
-      // so all links move together; top/bottom links face opposite ways → the top
-      // scrolls back and the bottom forward, like a real track).
-      trackTex.offset.x += travel * TRACK_SCROLL_K;
+      // Cycle the belt: every link steps toward the next loop slot (links on the
+      // top of the loop travel back, the bottom forward — like a real track).
+      trackPhase += travel * TRACK_CYCLE_K;
+      cycleBelt(leftNodes, leftRest, trackPhase);
+      cycleBelt(rightNodes, rightRest, trackPhase);
     }
 
     object.updateMatrixWorld(true);
