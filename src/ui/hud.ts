@@ -77,13 +77,16 @@ export function createHUD(seed: number, isTouch: boolean): HUD {
   }
   hud.appendChild(keys);
 
-  // Bottom-right seed chip.
+  // Seed chip, pinned to the bottom of the screen. Appended to the root (not the
+  // HUD box) so its fixed positioning is relative to the viewport — the HUD box's
+  // backdrop-filter would otherwise become its containing block — and so it never
+  // fades with the HUD legend.
   const seedChip = document.createElement('div');
   seedChip.className = 'seed';
   const baseLabel = `world #${seed}`;
   seedChip.textContent = baseLabel;
   seedChip.title = 'Copy a shareable link to this world';
-  hud.appendChild(seedChip);
+  root.appendChild(seedChip);
 
   let flashTimer = 0;
   seedChip.addEventListener('click', () => {

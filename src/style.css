@@ -167,11 +167,12 @@ body {
   color: var(--accent);
   font-weight: 600;
 }
-.hud .seed {
+.seed {
   position: fixed;
-  right: calc(14px + var(--safe-right));
   bottom: calc(14px + var(--safe-bottom));
-  left: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  right: auto;
   top: auto;
   pointer-events: auto;
   cursor: pointer;
@@ -183,11 +184,12 @@ body {
   border-radius: 8px;
   padding: 5px 10px;
   backdrop-filter: blur(6px);
+  z-index: 12;
 }
-.hud .seed:hover {
+.seed:hover {
   color: var(--ink);
 }
-.hud .seed.copied {
+.seed.copied {
   color: var(--accent-2);
   border-color: var(--accent-2);
 }
