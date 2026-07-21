@@ -10,7 +10,7 @@
  */
 
 const MUSIC_SRC = '/assets/music.mp3';
-const VOLUME = 0.4;
+const VOLUME = 0.2;
 
 export interface AudioController {
   /** Begin (or resume) playback. Safe to call after the enter gesture. */

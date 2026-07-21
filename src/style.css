@@ -139,8 +139,12 @@ body {
    HUD
    ============================================================ */
 .hud {
-  top: calc(14px + var(--safe-top));
-  left: calc(14px + var(--safe-left));
+  /* Without an explicit position, top/left below were inert (the element stayed
+     `static`, inheriting its absolute-positioned parent's 0,0 origin flush in the
+     corner) — that's why the margin never visibly applied. */
+  position: fixed;
+  top: calc(24px + var(--safe-top));
+  left: calc(24px + var(--safe-left));
   pointer-events: none;
   font-size: 13px;
   letter-spacing: 0.03em;
@@ -148,7 +152,7 @@ body {
   background: rgba(16, 21, 31, 0.55);
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   backdrop-filter: blur(6px);
   transition: opacity 600ms ease;
   user-select: none;
