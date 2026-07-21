@@ -341,7 +341,7 @@ export function createTank(
       for (const w of wheels) w.rotation.z += spin;
       // Cycle the belt: every link steps toward the next loop slot (links on the
       // top of the loop travel back, the bottom forward — like a real track).
-      trackPhase += travel * TRACK_CYCLE_K;
+      trackPhase -= travel * TRACK_CYCLE_K;
       cycleBelt(leftNodes, leftRest, trackPhase);
       cycleBelt(rightNodes, rightRest, trackPhase);
     }

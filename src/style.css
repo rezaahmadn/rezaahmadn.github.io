@@ -197,7 +197,9 @@ body {
    ============================================================ */
 .bubble {
   pointer-events: auto;
-  max-width: min(340px, 78vw);
+  /* Explicit width (not just max-width) so the bubble stays wide instead of
+     shrink-wrapping to the longest word (which made it narrow and tall). */
+  width: min(380px, 86vw);
   transform: translate(-50%, -100%);
   background: var(--panel);
   border: 1px solid var(--line);
