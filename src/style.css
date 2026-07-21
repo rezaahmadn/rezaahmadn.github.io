@@ -149,11 +149,11 @@ body {
   font-size: 13px;
   letter-spacing: 0.03em;
   color: var(--ink);
-  background: rgba(16, 21, 31, 0.55);
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  background: transparent;
+  border: none;
   padding: 10px 16px;
-  backdrop-filter: blur(6px);
+  /* Keep it legible over the 3D world without a background plate. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.65);
   transition: opacity 600ms ease;
   user-select: none;
 }
