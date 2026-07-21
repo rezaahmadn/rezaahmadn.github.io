@@ -1,0 +1,25 @@
+# Exported by three-d-stage
+newmtl granite_gray
+Kd 0.2542 0.2664 0.2789
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl basalt_dark
+Kd 0.1046 0.1119 0.1248
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl sandstone_warm
+Kd 0.3325 0.2747 0.2051
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl moss_green
+Kd 0.1470 0.2051 0.0782
+Ks 0.2000 0.2000 0.2000
+Ns 0
+d 1.0000
+

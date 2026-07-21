@@ -1,0 +1,31 @@
+# Exported by three-d-stage
+newmtl olive
+Kd 0.1470 0.1946 0.0595
+Ks 0.2000 0.2000 0.2000
+Ns 30
+d 1.0000
+
+newmtl olive-dark
+Kd 0.0887 0.1144 0.0395
+Ks 0.2000 0.2000 0.2000
+Ns 30
+d 1.0000
+
+newmtl gunmetal
+Kd 0.0423 0.0497 0.0395
+Ks 0.2000 0.2000 0.2000
+Ns 60
+d 1.0000
+
+newmtl wheel
+Kd 0.0685 0.0612 0.0513
+Ks 0.2000 0.2000 0.2000
+Ns 40
+d 1.0000
+
+newmtl track
+Kd 0.0273 0.0252 0.0212
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+

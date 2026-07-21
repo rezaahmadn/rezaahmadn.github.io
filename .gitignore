@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+
+# Blender backups
+*.blend1
+*.blend2
+
+# Node / Vite (for when the app scaffold lands)
+node_modules/
+dist/
+*.local
+
+# Personal — resume contains phone number; don't publish to a public repo.
+# Remove this line if you want it committed anyway.
+Resume - Reza Ahmad.pdf
