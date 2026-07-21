@@ -31,6 +31,7 @@ import {
 // --- Local (non-config) tuning: aesthetic / spec-described, not named in config.ts ---
 const NORMAL_LERP = 0.1; // ~10%/frame slope alignment (PRD §5.1)
 const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled
+const TRACK_SCROLL_K = 1.6; // tread-texture V-offset advanced per world unit (~roll w/o slip)
 const COLLISION_ITERATIONS = 3; // slide-resolution passes per frame
 const RADIUS_PADDING = 1.15; // grow footprint radius a touch beyond half-width
 
@@ -49,6 +50,33 @@ const UP = new THREE.Vector3(0, 1, 0);
 // In the 'muzzle' node's local frame the barrel points +Y (the node carries a +90°
 // Z rotation; local +Y maps to turret +X, the physical barrel axis).
 const MUZZLE_FORWARD = new THREE.Vector3(0, 1, 0);
+
+/**
+ * A small, seamlessly-tiling tank-tread texture: dark metal with recessed cleat
+ * bars. The track meshes are UV-mapped (in Blender) so V runs along the belt, so
+ * scrolling this texture's V-offset makes the tread visibly travel along the track.
+ */
+function makeTreadTexture(): THREE.CanvasTexture {
+  const c = document.createElement('canvas');
+  c.width = 16;
+  c.height = 16;
+  const g = c.getContext('2d');
+  if (g) {
+    g.fillStyle = '#3a3e45'; // dark metal base
+    g.fillRect(0, 0, 16, 16);
+    g.fillStyle = '#1f2228'; // recessed cleat bar
+    g.fillRect(0, 0, 16, 7);
+    g.fillStyle = '#4b515a'; // cleat highlight edge
+    g.fillRect(0, 7, 16, 2);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping;
+  t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(1, 4); // ~4 cleats per link segment
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.magFilter = THREE.NearestFilter; // crisp low-poly cleats
+  return t;
+}
 
 export function createTank(
   ctx: GameContext,
@@ -97,15 +125,30 @@ export function createTank(
   // its base local X and convert the world-space kick into local (unscaled) units.
   const barrelBaseX = barrelNode ? barrelNode.position.x : 0;
   const recoilLocal = RECOIL_DIST / scale;
-  // Roll the road wheels + drive sprockets while driving. (The segmented track
-  // links themselves are baked into the model with identity transforms and share
-  // a single mesh, so the belt can't be scrolled from code — the rolling wheels
-  // carry the sense of motion. A true scrolling belt would need the tank
-  // re-authored in Blender with an animatable track.)
+  // Roll the road wheels + drive sprockets while driving.
   const wheels: THREE.Object3D[] = [];
   model.traverse((o) => {
     const n = o.name.toLowerCase();
     if (n.includes('roadwheel') || n.includes('sprocket')) wheels.push(o);
+  });
+
+  // Scrolling track belt: every track mesh shares the 'track' material and is
+  // UV-mapped (in Blender) so V runs along the belt tangent. Assigning one shared
+  // tread texture and scrolling its V-offset with travel makes the belt visibly
+  // move; because links on the top vs bottom of the loop face opposite ways, the
+  // top scrolls back and the bottom forward — like a real track.
+  const trackTex = makeTreadTexture();
+  model.traverse((o) => {
+    const mat = (o as THREE.Mesh).material;
+    if (!mat) return;
+    for (const m of Array.isArray(mat) ? mat : [mat]) {
+      if (m.name && m.name.toLowerCase().includes('track')) {
+        const sm = m as THREE.MeshStandardMaterial;
+        sm.map = trackTex;
+        sm.color.set(0xffffff); // show the tread texture at its own tones
+        sm.needsUpdate = true;
+      }
+    }
   });
 
   // ----- State -----
@@ -240,12 +283,14 @@ export function createTank(
       turretNode.rotation.y -= input.turret();
     }
 
-    // --- Roadwheel / sprocket roll, proportional to and in the direction of travel ---
+    // --- Roadwheel / sprocket roll + track-belt scroll, in the direction of travel ---
     if (Math.abs(travel) > 1e-6) {
       // Wheels roll about their lateral axle. The model is authored forward = +X,
       // so the axle is the local Z axis (rolling about X would spin them flat).
       const spin = travel * WHEEL_SPIN_PER_UNIT;
       for (const w of wheels) w.rotation.z += spin;
+      // Scroll the tread along the belt (shared texture → all links move together).
+      trackTex.offset.y += travel * TRACK_SCROLL_K;
     }
 
     object.updateMatrixWorld(true);
