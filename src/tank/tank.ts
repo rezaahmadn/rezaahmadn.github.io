@@ -30,7 +30,7 @@ import {
 
 // --- Local (non-config) tuning: aesthetic / spec-described, not named in config.ts ---
 const NORMAL_LERP = 0.1; // ~10%/frame slope alignment (PRD §5.1)
-const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled (flourish)
+const WHEEL_SPIN_PER_UNIT = 6; // radians of wheel roll per world unit travelled
 const COLLISION_ITERATIONS = 3; // slide-resolution passes per frame
 const RADIUS_PADDING = 1.15; // grow footprint radius a touch beyond half-width
 
@@ -97,6 +97,11 @@ export function createTank(
   // its base local X and convert the world-space kick into local (unscaled) units.
   const barrelBaseX = barrelNode ? barrelNode.position.x : 0;
   const recoilLocal = RECOIL_DIST / scale;
+  // Roll the road wheels + drive sprockets while driving. (The segmented track
+  // links themselves are baked into the model with identity transforms and share
+  // a single mesh, so the belt can't be scrolled from code — the rolling wheels
+  // carry the sense of motion. A true scrolling belt would need the tank
+  // re-authored in Blender with an animatable track.)
   const wheels: THREE.Object3D[] = [];
   model.traverse((o) => {
     const n = o.name.toLowerCase();
@@ -229,14 +234,18 @@ export function createTank(
     }
 
     // --- Turret yaw (input.turret() is a per-frame radian delta, per types.ts) ---
+    // Negate so ArrowRight/right-drag swings the turret to the viewer's right
+    // (inverts keyboard AND touch consistently at the single application point).
     if (turretNode && active) {
-      turretNode.rotation.y += input.turret();
+      turretNode.rotation.y -= input.turret();
     }
 
-    // --- Roadwheel / sprocket spin flourish ---
-    if (wheels.length > 0 && Math.abs(travel) > 1e-6) {
+    // --- Roadwheel / sprocket roll, proportional to and in the direction of travel ---
+    if (Math.abs(travel) > 1e-6) {
+      // Wheels roll about their lateral axle. The model is authored forward = +X,
+      // so the axle is the local Z axis (rolling about X would spin them flat).
       const spin = travel * WHEEL_SPIN_PER_UNIT;
-      for (const w of wheels) w.rotation.x += spin;
+      for (const w of wheels) w.rotation.z += spin;
     }
 
     object.updateMatrixWorld(true);

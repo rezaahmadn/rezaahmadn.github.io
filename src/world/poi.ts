@@ -12,8 +12,13 @@ import type { Collider, GameContext, PlacedPOI, PoiSpot, POISystem } from '../ty
 import { POI_RADIUS } from '../config';
 
 // --- Local tunables (not named by config) ---------------------------------
-/** Buildings normalize to ~7 units tall (§ asset facts: 6–8). */
-const BUILDING_HEIGHT = 7;
+/**
+ * Buildings normalize so their LARGEST dimension ≈ this — not their height.
+ * Normalizing by height alone stretches a low, wide asset (e.g. low-poly-house
+ * is 8.7×2.4×8.5) to a giant ~25-unit-wide box with a huge footprint collider.
+ * Scaling by the max dimension keeps every building's natural proportions.
+ */
+const BUILDING_MAX_DIM = 8;
 /** Vertical gap between building top and label. */
 const LABEL_GAP = 1.2;
 const LABEL_BOB_AMP = 0.3;
@@ -124,8 +129,9 @@ export function createPOIs(ctx: GameContext, spots: PoiSpot[]): POISystem {
     mesh.updateMatrixWorld(true);
 
     const box0 = new THREE.Box3().setFromObject(mesh);
-    const natural = box0.max.y - box0.min.y || 1;
-    const s = BUILDING_HEIGHT / natural;
+    const size0 = box0.getSize(new THREE.Vector3());
+    const natural = Math.max(size0.x, size0.y, size0.z) || 1;
+    const s = BUILDING_MAX_DIM / natural;
     mesh.scale.setScalar(s);
     mesh.updateMatrixWorld(true);
 

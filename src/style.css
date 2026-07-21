@@ -459,3 +459,46 @@ body {
 body.is-touch .touch-only {
   display: block;
 }
+
+/* ============================================================
+   Audio mute toggle
+   Top-right round button — clear of the HUD (top-left) and the
+   seed chip (bottom-right). Re-enables pointer events over the
+   pointer-events:none #ui overlay.
+   ============================================================ */
+#audio-ctl {
+  pointer-events: none;
+}
+.mute-btn {
+  position: fixed;
+  top: calc(14px + var(--safe-top));
+  right: calc(14px + var(--safe-right));
+  left: auto;
+  bottom: auto;
+  z-index: 40;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(16, 21, 31, 0.55);
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: transform 80ms ease, background 120ms ease, border-color 120ms ease;
+}
+.mute-btn:hover {
+  border-color: var(--accent);
+  background: rgba(29, 38, 55, 0.7);
+}
+.mute-btn:active {
+  transform: translateY(1px);
+}

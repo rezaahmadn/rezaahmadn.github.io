@@ -6,7 +6,8 @@
  *   1. POIs   — one per project in data/projects.ts (rejection-sampled).
  *   2. Decoration — trees / bushes / rocks around (but clear of) the POIs.
  *
- * Only rocks register colliders; trees and bushes are drive-through.
+ * Trees and rocks register colliders; bushes are drive-through. Trees use a
+ * small trunk-sized radius so the tank is stopped near the trunk, not the canopy.
  */
 
 import * as THREE from 'three';
@@ -47,6 +48,12 @@ const BUSH_HEIGHT = 1.2;
 const ROCK_HEIGHT = 1.4;
 /** Uniform per-instance scale jitter: ±15%. */
 const SCALE_JITTER = 0.15;
+
+/**
+ * Trunk-sized collider radius for trees. Deliberately small (a trunk, not the
+ * canopy) so the tank is stopped near the trunk rather than out at the leaves.
+ */
+const TREE_TRUNK_RADIUS = 0.7;
 
 const TREE_KEYS: AssetKey[] = ['low-poly-tree', 'lowpoly-oak-tree'];
 
@@ -172,18 +179,25 @@ function scatterDecoration(
   spots: PoiSpot[],
 ): { decoration: THREE.Object3D[]; colliders: Collider[] } {
   const decoration: THREE.Object3D[] = [];
-  const rockColliders: Collider[] = [];
+  const decoColliders: Collider[] = [];
   const placed: Placed[] = [];
 
-  const kinds: Array<{ count: number; height: number; isRock: boolean; pick: () => AssetKey }> = [
+  const kinds: Array<{
+    count: number;
+    height: number;
+    isRock: boolean;
+    isTree: boolean;
+    pick: () => AssetKey;
+  }> = [
     {
       count: DECO_TREES,
       height: TREE_HEIGHT,
       isRock: false,
+      isTree: true,
       pick: () => (ctx.rng() < 0.5 ? TREE_KEYS[0] : TREE_KEYS[1]),
     },
-    { count: DECO_BUSHES, height: BUSH_HEIGHT, isRock: false, pick: () => 'low-poly-bush' },
-    { count: DECO_ROCKS, height: ROCK_HEIGHT, isRock: true, pick: () => 'low-poly-rocks' },
+    { count: DECO_BUSHES, height: BUSH_HEIGHT, isRock: false, isTree: false, pick: () => 'low-poly-bush' },
+    { count: DECO_ROCKS, height: ROCK_HEIGHT, isRock: true, isTree: false, pick: () => 'low-poly-rocks' },
   ];
 
   const spawnMin2 = DECO_MIN_FROM_SPAWN * DECO_MIN_FROM_SPAWN;
@@ -230,7 +244,13 @@ function scatterDecoration(
 
         if (kind.isRock) {
           const collider: Collider = { x, z, radius };
-          rockColliders.push(collider);
+          decoColliders.push(collider);
+          ctx.colliders.push(collider);
+        } else if (kind.isTree) {
+          // Trees block the tank near the trunk — use a small trunk radius, not
+          // the wide canopy footprint that seat() returns in `radius`.
+          const collider: Collider = { x, z, radius: TREE_TRUNK_RADIUS };
+          decoColliders.push(collider);
           ctx.colliders.push(collider);
         }
 
@@ -239,7 +259,7 @@ function scatterDecoration(
     }
   }
 
-  return { decoration, colliders: rockColliders };
+  return { decoration, colliders: decoColliders };
 }
 
 export function generateWorld(ctx: GameContext): ScatterResult {

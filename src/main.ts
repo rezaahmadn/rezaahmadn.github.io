@@ -33,6 +33,7 @@ import { createTank } from './tank/tank';
 import { createProjectiles } from './tank/projectile';
 import { createFX } from './fx/explosion';
 import { createCameraRig } from './camera';
+import { createAudio } from './audio';
 import { createLoading } from './ui/loading';
 import { createIntroDialog } from './ui/dialog';
 import { createPopup } from './ui/popup';
@@ -126,6 +127,11 @@ async function boot(): Promise<void> {
   const assets = await createAssetLibrary().load((f) => loading.setProgress(f));
   await loading.waitForEnter();
   loading.hide();
+
+  // waitForEnter() resolved on a real click/keypress, so the browser autoplay
+  // policy is satisfied — start the looping background music now (post-gesture).
+  const audio = createAudio();
+  audio.start();
 
   // 2) Seeded rng + terrain (the single height authority).
   const { seed, rng } = initRng();

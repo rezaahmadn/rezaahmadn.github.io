@@ -41,7 +41,7 @@ export const DECO_MIN_SPACING = 2.5;
 
 // --- Camera ---
 export const CAMERA_FOV = 20;
-export const CAMERA_OFFSET = { x: 22, y: 28, z: 22 } as const;
+export const CAMERA_OFFSET = { x: 31, y: 39, z: 31 } as const;
 export const CAMERA_LERP = 0.05;
 
 // --- Water / ripples ---
