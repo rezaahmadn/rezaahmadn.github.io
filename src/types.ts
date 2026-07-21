@@ -179,7 +179,18 @@ export interface Popup {
 
 export interface HUD {
   fadeAfterFirstShot(): void;
+  /** Update the "sites visited" counter (e.g. 4/6). */
+  setSites(visited: number, total: number): void;
   element: HTMLElement;
+}
+
+/**
+ * Commander Reza's radio: non-blocking transmission toasts (proximity quips)
+ * plus the one input-pausing finale card shown when every site is visited.
+ */
+export interface RadioSystem {
+  say(text: string): void;
+  finale(): void;
 }
 
 export type { Project };

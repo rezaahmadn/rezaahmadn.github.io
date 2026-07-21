@@ -8,7 +8,14 @@
  */
 
 import * as THREE from 'three';
-import type { Collider, GameContext, PlacedPOI, PoiSpot, POISystem } from '../types';
+import type {
+  Collider,
+  GameContext,
+  PlacedPOI,
+  PoiSpot,
+  POISystem,
+  RadioSystem,
+} from '../types';
 import { POI_RADIUS } from '../config';
 
 // --- Local tunables (not named by config) ---------------------------------
@@ -115,10 +122,17 @@ function makeLabel(text: string): THREE.Sprite {
   return sprite;
 }
 
-export function createPOIs(ctx: GameContext, spots: PoiSpot[]): POISystem {
+export function createPOIs(
+  ctx: GameContext,
+  spots: PoiSpot[],
+  radio?: RadioSystem,
+  canTalk?: () => boolean,
+): POISystem {
   const pois: PlacedPOI[] = [];
   const entries: Entry[] = [];
   let time = 0;
+  // Radio quips fire once per POI per visit, the first time the tank gets close.
+  const announced = new Set<string>();
 
   spots.forEach((spot, index) => {
     // --- Building ---------------------------------------------------------
@@ -219,6 +233,20 @@ export function createPOIs(ctx: GameContext, spots: PoiSpot[]): POISystem {
       const dist = Math.sqrt(dx * dx + dz * dz);
       const target = dist < LABEL_NEAR_DIST ? 1 - dist / LABEL_NEAR_DIST : 0;
       e.boost += (target - e.boost) * LABEL_APPROACH;
+
+      // Commander Reza's proximity quip (§ radio): first time near, when the
+      // intro dialog is done and no popup is open.
+      const line = e.poi.project.radioLine;
+      if (
+        radio &&
+        line &&
+        dist < LABEL_NEAR_DIST &&
+        !announced.has(e.poi.project.id) &&
+        (canTalk?.() ?? true)
+      ) {
+        announced.add(e.poi.project.id);
+        radio.say(line);
+      }
 
       const scale = 1 + LABEL_NEAR_BOOST * e.boost;
       const aspect = LABEL_CANVAS_H / LABEL_CANVAS_W;

@@ -11,9 +11,12 @@
 import type { InputSystem, Popup } from '../types';
 import type { Project } from '../data/projects';
 
-const FOOTER_TEXT = "— fired from Reza's World —";
-const VISIT_LABEL = 'Visit project →';
+const KICKER_TEXT = 'FIELD REPORT';
+const FOOTER_TEXT = '— transmission ends —';
+const VISIT_LABEL = 'Deploy to project →';
 const CLOSE_LABEL = 'Keep exploring';
+const SITREP_LABEL = 'SITREP';
+const ARMAMENT_LABEL = 'ARMAMENT';
 
 function mustGet(id: string): HTMLElement {
   const el = document.getElementById(id);
@@ -29,8 +32,11 @@ export function createPopup(input: InputSystem): Popup {
   container.innerHTML = `
     <div class="backdrop"></div>
     <div class="popup-card" role="dialog" aria-modal="true">
+      <div class="kicker"></div>
       <h2></h2>
+      <div class="sec-label sitrep"></div>
       <p class="blurb"></p>
+      <div class="sec-label armament"></div>
       <div class="chips"></div>
       <div class="actions">
         <a class="btn primary" target="_blank" rel="noopener"></a>
@@ -39,6 +45,9 @@ export function createPopup(input: InputSystem): Popup {
       <div class="footer"></div>
     </div>
   `;
+  (container.querySelector('.kicker') as HTMLElement).textContent = KICKER_TEXT;
+  (container.querySelector('.sec-label.sitrep') as HTMLElement).textContent = SITREP_LABEL;
+  (container.querySelector('.sec-label.armament') as HTMLElement).textContent = ARMAMENT_LABEL;
 
   const backdrop = container.querySelector('.backdrop') as HTMLElement;
   const card = container.querySelector('.popup-card') as HTMLElement;

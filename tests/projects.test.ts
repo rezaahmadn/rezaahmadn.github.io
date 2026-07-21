@@ -95,6 +95,34 @@ describe('project validation (PRD §7.4)', () => {
     expect(validateProjects(raw)[0].building).toBe('low-poly-house');
   });
 
+  it('keeps a valid radioLine, strips an invalid one without dropping the entry', () => {
+    const raw: Project[] = [
+      {
+        id: 'with-line',
+        title: 'With Line',
+        blurb: 'x',
+        tech: ['x'],
+        url: 'https://e.com/a',
+        radioLine: 'Target ahead. Over.',
+      },
+      {
+        id: 'bad-line',
+        title: 'Bad Line',
+        blurb: 'x',
+        tech: ['x'],
+        url: 'https://e.com/b',
+        radioLine: '   ',
+      },
+      { id: 'no-line', title: 'No Line', blurb: 'x', tech: ['x'], url: 'https://e.com/c' },
+    ];
+    const result = validateProjects(raw);
+    expect(result).toHaveLength(3); // a bad radioLine never drops the project
+    expect(result[0].radioLine).toBe('Target ahead. Over.');
+    expect(result[1].radioLine).toBeUndefined();
+    expect(result[2].radioLine).toBeUndefined();
+    expect(console.warn).toHaveBeenCalled();
+  });
+
   it('getProjects() returns the real, all-valid project list', () => {
     const projects = getProjects();
     expect(projects.length).toBeGreaterThan(0);

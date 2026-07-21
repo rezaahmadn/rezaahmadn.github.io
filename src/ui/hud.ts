@@ -100,11 +100,28 @@ export function createHUD(seed: number, isTouch: boolean): HUD {
     }, COPIED_MS);
   });
 
+  // Sites-visited counter, just above the seed chip (same transparent style).
+  const sites = document.createElement('div');
+  sites.className = 'sites';
+  root.appendChild(sites);
+
+  // "classic site" escape hatch under the control legend — nobody is ever
+  // trapped in the game (PRD §2 two-door entry).
+  const classicLink = document.createElement('a');
+  classicLink.className = 'classic-link';
+  classicLink.textContent = '📄 classic site';
+  classicLink.href = 'classic.html';
+  root.appendChild(classicLink);
+
   root.appendChild(hud);
 
   function fadeAfterFirstShot(): void {
     hud.classList.add('dim');
   }
 
-  return { fadeAfterFirstShot, element: hud };
+  function setSites(visited: number, total: number): void {
+    sites.textContent = `sites ${visited}/${total}`;
+  }
+
+  return { fadeAfterFirstShot, setSites, element: hud };
 }

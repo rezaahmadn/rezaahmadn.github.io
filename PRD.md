@@ -17,6 +17,12 @@ A personal portfolio website that is a small 3D game. The visitor drives a low-p
 5. The tank can **drive into and through the lake**: it slows down, sinks to the lakebed, and the water reacts with **simulated ripples**. Driving out the far side works.
 6. World layout (trees, bushes, rocks, POI building positions) is **procedurally placed from a seed**, so every visit is a slightly different world. The seed is shareable via URL.
 
+### 2b. Content & story layer (added post-v1)
+- **Two-door entry:** the loading screen is a briefing card — name/title/stack + LinkedIn/Email links (clickable during load) — and when ready offers **[🎮 Explore my world]** (game; any key works too) and **[📄 Just the facts]** (→ `classic.html`).
+- **Classic page** (`classic.html` + `src/classic.ts`, second Vite entry): traditional single-page portfolio rendered from the same `getProjects()` data plus web-safe resume content (**no phone/address**). Cross-linked both ways (in-game "📄 classic site" link under the HUD legend).
+- **Commander Reza radio persona:** the intro bubble is a typewriter "transmission" (copy in §8.3); driving near a POI for the first time triggers its `radioLine` as a non-blocking bottom-center transmission toast (`src/ui/radio.ts`), suppressed until the intro is done and while a popup is open.
+- **Completion:** POI hits are tracked (`sites n/N` HUD counter, transparent, above the seed chip). When all sites are hit, after the last FIELD REPORT closes, a finale card appears: tour-complete transmission + `[✉ Open a channel]` (mailto) + `[LinkedIn]` + `[Keep roaming]`. Once per visit.
+
 ## 3. Tech stack & constraints
 
 | Decision | Value |
@@ -123,10 +129,11 @@ Opens on POI hit. Pauses game input (except Esc). Content: title, `blurb`, tech 
 export interface Project {
   id: string;
   title: string;        // hovering label + popup title
-  blurb: string;        // 1–2 sentences shown in the popup
-  tech: string[];       // chips
-  url: string;          // "Visit" target
+  blurb: string;        // 1–2 sentences shown in the popup (SITREP)
+  tech: string[];       // chips (ARMAMENT)
+  url: string;          // "Deploy to project" target
   building?: 'wrecked-building' | 'low-poly-house';  // omit → auto-alternate by index
+  radioLine?: string;   // Commander Reza's proximity quip; invalid → stripped w/ warning, never drops the entry
 }
 ```
 
@@ -158,36 +165,45 @@ Rules that make this hold:
 
 ## 8. UI copy & screens (exact text)
 
-### 8.1 Loading screen
-Full-viewport dark overlay, big low-poly-styled headline, subtle CSS (no assets):
+### 8.1 Briefing screen (loading + two doors, §2b)
 ```
 WELCOME TO MY WORLD
 Reza Ahmad Nurfauzan — Software Engineer
+React · React Native · TypeScript · Node.js
+[LinkedIn] [Email]
 [———— progress bar ————]  Deploying tank… 47%
 ```
-When ready, the progress line becomes: `Click or press any key to enter`. Fade out 400 ms on enter.
+When ready the status line clears and two doors appear: `🎮 Explore my world` (button; any non-Tab/Shift/Enter key also enters) and `📄 Just the facts` (link → classic.html). Fade out 400 ms on enter.
 
-### 8.2 HUD (top-left, small, semi-transparent; fades to 30% opacity after first shot)
+### 8.2 HUD (top-left transparent legend; fades to 30% opacity after first shot)
 ```
 W A S D  drive      ← →  turret      SPACE  fire
+📄 classic site                                  ← escape-hatch link under the legend
 ```
 Touch devices instead: `left stick  drive      drag right side  turret      🔘  fire`.
-Bottom-right corner: `world #<seed>` (click = copy shareable URL, flash "copied!").
+Bottom-left: transparent `world #<seed>` (click = copy shareable URL, flash "copied!") with `sites n/N` counter above it.
 
-### 8.3 Intro speech bubble (HTML bubble with a tail, anchored above the tank by projecting the tank's position to screen space every frame; advance with SPACE/click; step dots shown)
-1. `Commander Reza here! Welcome to my world. By day I build web & mobile apps — out here, I drive this thing.`
-2. `Controls: WASD to drive. ← → to swing the turret. SPACE to fire. Go on, try a shot.` — on touch devices: `Controls: left stick to drive. Drag the right side to swing the turret. Tap 🔘 to fire. Go on, try a shot.`
-3. `No missions, no score, no ending — just explore. See a building with a floating sign? Put a shell near it to check out my work.`
+### 8.3 Intro transmission (bubble anchored above the tank; ~45 chars/s typewriter — first SPACE/click completes the line, next advances; step dots shown)
+Header: `COMMANDER REZA — TRANSMISSION`
+1. `*bzzt* Commander Reza here — welcome to my world, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.`
+2. `Controls, listen up: WASD drives. ◄ ► swings the turret. SPACE fires. Go on — squeeze one off. Over.` — touch: `Controls, listen up: left stick drives. Drag the right side to swing the turret. Tap FIRE. Go on — squeeze one off. Over.`
+3. `No missions. No score. No ending. See a building with a floating sign? That's one of my projects — put a shell near it and I'll send you the field report. Out.`
 After step 3 the bubble dismisses permanently (per-visit; no persistence needed).
 
-### 8.4 Popup card
-See §7.2. Footer of every popup: `— fired from Reza's World —` (small, muted).
+### 8.4 FIELD REPORT popup
+See §7.2, restyled as a report: `FIELD REPORT` kicker chip, title, `SITREP` label + blurb, `ARMAMENT` label + chips, `[Deploy to project →]` `[Keep exploring]`, footer `— transmission ends —`.
+
+### 8.5 Radio toasts + finale
+- Proximity toast (bottom-center): header `COMMANDER REZA — INCOMING TRANSMISSION`, typewriter body from `project.radioLine`, auto-dismiss ~5.5 s after completing; tap = skip/dismiss; queued one-at-a-time; never pauses input.
+- Finale (all sites visited, shown after the last report closes; input-pausing; once per visit): title `TOUR COMPLETE`, body `*bzzt* That's every site in the sector, soldier. Tour complete. If you like what you've seen, open a channel. Commander Reza, out.`, buttons `✉ Open a channel` (mailto) / `LinkedIn` / `Keep roaming`, footer `— end of transmission —`.
 
 ## 9. Architecture / file map
 
 ```
 src/
 ├─ main.ts               # bootstrap, render loop, system wiring, resize
+├─ classic.ts            # "Just the facts" page (second Vite entry, renders from data/projects)
+├─ ui/radio.ts           # transmission toasts + finale card (§8.5)
 ├─ config.ts             # every tunable named in this PRD (speeds, radii, wave params…)
 ├─ input.ts              # key state Set + edge-trigger helper; "paused" flag popup/dialog can set
 ├─ camera.ts             # isometric follow: PerspectiveCamera fov 20, offset ≈ (22, 28, 22), lerped

@@ -12,10 +12,12 @@
 export interface Project {
   id: string;
   title: string; // hovering label + popup title
-  blurb: string; // 1–2 sentences shown in the popup
-  tech: string[]; // chips
-  url: string; // "Visit" target
+  blurb: string; // 1–2 sentences shown in the popup (SITREP)
+  tech: string[]; // chips (ARMAMENT)
+  url: string; // "Deploy to project" target
   building?: 'wrecked-building' | 'low-poly-house'; // omit → auto-alternate by index
+  /** Commander Reza's radio quip when the tank first drives near this POI. */
+  radioLine?: string;
 }
 
 // Placeholder used for every TODO url so all buttons work before launch.
@@ -30,6 +32,8 @@ const PROJECTS: Project[] = [
     tech: ['React Native', 'TypeScript', 'Solana', 'Zustand', 'Fastlane'],
     url: LINKEDIN, // TODO (Play Store)
     building: 'wrecked-building',
+    radioLine:
+      "That's J-Wallet HQ, soldier. A crypto wallet for Indonesia — live on Google Play. Fire on it for the field report. Over.",
   },
   {
     id: 'jwallet-miniapp',
@@ -39,6 +43,8 @@ const PROJECTS: Project[] = [
     tech: ['React', 'TypeScript', 'Vite', 'styled-components', 'TON'],
     url: LINKEDIN, // TODO (Telegram)
     building: 'low-poly-house',
+    radioLine:
+      'Telegram outpost ahead. We rebuilt the entire wallet inside Telegram at ninety percent parity. Shell it for details. Over.',
   },
   {
     id: 'jwallet-backend',
@@ -48,6 +54,8 @@ const PROJECTS: Project[] = [
     tech: ['Node.js', 'TypeScript', 'Express', 'Prisma', 'Solana'],
     url: LINKEDIN, // TODO
     building: 'wrecked-building',
+    radioLine:
+      'That bunker runs the backend — settlements, escrow, payment rails. Rock solid under fire. Take the shot. Over.',
   },
   {
     id: 'easyidrbot',
@@ -57,6 +65,8 @@ const PROJECTS: Project[] = [
     tech: ['TypeScript', 'Telegram Bot API'],
     url: LINKEDIN, // TODO (Telegram)
     building: 'low-poly-house',
+    radioLine:
+      'Comms relay station. Built a Telegram bot for Coinfest Asia — kept serving long after the conference ended. Light it up. Over.',
   },
   {
     id: 'adx-asia',
@@ -66,6 +76,8 @@ const PROJECTS: Project[] = [
     tech: ['Vue.js', 'SCSS', 'Node.js', 'Firebase'],
     url: LINKEDIN, // TODO (website)
     building: 'low-poly-house',
+    radioLine:
+      'Old ADX garrison, my first tour. Vue.js ops platform and a landing-page rework. One round, on target. Over.',
   },
   {
     id: 'commander-hq',
@@ -75,6 +87,8 @@ const PROJECTS: Project[] = [
     tech: ['About me'],
     url: LINKEDIN,
     building: 'wrecked-building',
+    radioLine:
+      "That's my HQ, soldier. The full story on your commander is inside. Knock first — with the cannon. Over.",
   },
 ];
 
@@ -122,9 +136,20 @@ export function validateProjects(raw: readonly Project[]): Project[] {
       continue;
     }
 
+    // radioLine is optional flavor — a bad one is stripped (with a warning),
+    // never grounds for skipping the whole project.
+    let radioLine = p.radioLine;
+    if (radioLine !== undefined && !isNonEmptyString(radioLine)) {
+      console.warn(
+        `[projects] entry "${p.id}": ignoring empty/invalid radioLine`,
+      );
+      radioLine = undefined;
+    }
+
     const idx = valid.length;
     valid.push({
       ...p,
+      radioLine,
       building: p.building ?? BUILDINGS[idx % BUILDINGS.length],
     });
   }

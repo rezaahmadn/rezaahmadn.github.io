@@ -29,6 +29,7 @@ import { createWater } from './world/water';
 import { generateWorld } from './world/scatter';
 import { createPOIs } from './world/poi';
 import { createInput } from './input';
+import { createRadio } from './ui/radio';
 import { createTank } from './tank/tank';
 import { createProjectiles } from './tank/projectile';
 import { createFX } from './fx/explosion';
@@ -150,14 +151,19 @@ async function boot(): Promise<void> {
     colliders,
   };
 
-  // 4) Water (single shared instance), procedural world, and POI buildings.
+  // 4) Water (single shared instance) and the procedural world layout.
   const water = createWater(scene, assets);
   const { poiSpots } = generateWorld(ctx);
-  const poi = createPOIs(ctx, poiSpots);
 
-  // 5) Input + player systems. FX is built before the tank so the tank can spawn
-  //    its wading wake rings (§6.3) through the shared FX system.
+  // 5) Input, radio, and POIs. The radio needs input (its finale pauses the
+  //    game); POIs need the radio for proximity quips. canTalk defers reading
+  //    `dialog`/`popup` until the loop runs — both exist by then.
   const input = createInput(canvas);
+  const radio = createRadio(input);
+  const poi = createPOIs(ctx, poiSpots, radio, () => dialog.done && !popup.isOpen);
+
+  // FX is built before the tank so the tank can spawn its wading wake rings
+  // (§6.3) through the shared FX system.
   const fx = createFX(scene);
   const tank = createTank(ctx, input, water, fx);
   const cameraRig = createCameraRig(camera);
@@ -171,14 +177,39 @@ async function boot(): Promise<void> {
       tank.position.z = sz;
     }
   }
+  // Dev-only: mark sites visited from the console (tour/finale testing).
+  (window as unknown as Record<string, unknown>).__visit = (id: string) =>
+    markVisited(id);
 
   // 6) UI. The popup must exist before projectiles so the POI-hit callback can
-  //    open it; projectiles route a POI hit straight to the popup card.
+  //    open it. A POI hit opens the FIELD REPORT and advances the tour; when
+  //    every site has been visited, Commander Reza sends the finale.
   const popup = createPopup(input);
-  const projectiles = createProjectiles(ctx, fx, poi, water, (p) =>
-    popup.open(p.project),
-  );
   const hud = createHUD(seed, input.isTouch);
+  const visited = new Set<string>();
+  const totalSites = poi.pois.length;
+  hud.setSites(0, totalSites);
+
+  // Advance the tour; when every site is visited, send the finale — but let the
+  // player read/close the current field report first.
+  function markVisited(id: string): void {
+    if (visited.has(id)) return;
+    visited.add(id);
+    hud.setSites(visited.size, totalSites);
+    if (visited.size === totalSites && totalSites > 0) {
+      const check = window.setInterval(() => {
+        if (!popup.isOpen) {
+          window.clearInterval(check);
+          radio.finale();
+        }
+      }, 300);
+    }
+  }
+
+  const projectiles = createProjectiles(ctx, fx, poi, water, (p) => {
+    popup.open(p.project);
+    markVisited(p.project.id);
+  });
 
   // 7) Intro speech bubble, anchored just above the tank each frame.
   const _anchorWorld = new THREE.Vector3();

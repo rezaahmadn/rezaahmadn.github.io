@@ -9,7 +9,8 @@
 
 import type { IntroDialog } from '../types';
 
-const WHO = 'Commander Reza';
+const WHO = 'Commander Reza — Transmission';
+const TYPE_CPS = 45; // typewriter chars/second
 
 interface Step {
   text: string;
@@ -18,15 +19,15 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    text: 'Commander Reza here! Welcome to my world. By day I build web & mobile apps — out here, I drive this thing.',
+    text: '*bzzt* Commander Reza here — welcome to my world, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.',
   },
   {
-    text: 'Controls: WASD to drive. ← → to swing the turret. SPACE to fire. Go on, try a shot.',
+    text: 'Controls, listen up: WASD drives. ◄ ► swings the turret. SPACE fires. Go on — squeeze one off. Over.',
     touch:
-      'Controls: left stick to drive. Drag the right side to swing the turret. Tap 🔘 to fire. Go on, try a shot.',
+      'Controls, listen up: left stick drives. Drag the right side to swing the turret. Tap FIRE. Go on — squeeze one off. Over.',
   },
   {
-    text: 'No missions, no score, no ending — just explore. See a building with a floating sign? Put a shell near it to check out my work.',
+    text: "No missions. No score. No ending. See a building with a floating sign? That's one of my projects — put a shell near it and I'll send you the field report. Out.",
   },
 ];
 
@@ -75,14 +76,38 @@ export function createIntroDialog(isTouch: boolean): IntroDialog {
   let step = 0;
   let anchorFn: (() => { x: number; y: number } | null) | null = null;
 
+  // Typewriter reveal: first advance-press skips to the full line, the next
+  // one moves to the following step (radio-transmission feel, PRD §8.3).
+  let typing = 0; // interval id (0 = not typing)
+  let fullText = '';
+
   function render(): void {
     const s = STEPS[step];
-    textEl.textContent = isTouch && s.touch ? s.touch : s.text;
+    fullText = isTouch && s.touch ? s.touch : s.text;
     dotEls.forEach((d, i) => d.classList.toggle('on', i === step));
+
+    window.clearInterval(typing);
+    textEl.textContent = '';
+    let i = 0;
+    typing = window.setInterval(() => {
+      i++;
+      textEl.textContent = fullText.slice(0, i);
+      if (i >= fullText.length) {
+        window.clearInterval(typing);
+        typing = 0;
+      }
+    }, 1000 / TYPE_CPS);
   }
 
   function advance(): void {
     if (api.done || !started) return;
+    if (typing !== 0) {
+      // Mid-type: complete the current line instead of advancing.
+      window.clearInterval(typing);
+      typing = 0;
+      textEl.textContent = fullText;
+      return;
+    }
     step++;
     if (step >= STEPS.length) {
       finish();
@@ -93,6 +118,8 @@ export function createIntroDialog(isTouch: boolean): IntroDialog {
 
   function finish(): void {
     api.done = true;
+    window.clearInterval(typing);
+    typing = 0;
     bubble.classList.add('hidden');
     window.removeEventListener('keydown', onKey);
     window.removeEventListener('pointerdown', onPointer);
