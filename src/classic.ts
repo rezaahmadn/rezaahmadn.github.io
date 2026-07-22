@@ -130,7 +130,7 @@ const projects = section('Projects');
 const gameDoor = el('a', 'c-game-door', '🎮 Or drive a tank through all this instead →');
 (gameDoor as HTMLAnchorElement).href = './';
 projects.appendChild(gameDoor);
-for (const p of getProjects()) {
+for (const p of getProjects().filter((p) => !p.classicHidden)) {
   const card = el('article', 'c-project');
   const head = el('div', 'c-project-head');
   head.appendChild(el('h3', undefined, p.title));

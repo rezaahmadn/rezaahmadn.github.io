@@ -18,6 +18,9 @@ export interface Project {
   building?: 'wrecked-building' | 'low-poly-house'; // omit → auto-alternate by index
   /** Commander Reza's radio quip when the tank first drives near this POI. */
   radioLine?: string;
+  /** Hide from the classic page's project list (still a POI in the game) —
+   *  e.g. the About-me HQ, which duplicates the classic page's About section. */
+  classicHidden?: boolean;
 }
 
 // Placeholder used for every TODO url so all buttons work before launch.
@@ -89,6 +92,7 @@ const PROJECTS: Project[] = [
     building: 'wrecked-building',
     radioLine:
       "That's my HQ, soldier. The full story on your commander is inside. Knock first — with the cannon. Over.",
+    classicHidden: true, // the classic page's About section already covers this
   },
 ];
 

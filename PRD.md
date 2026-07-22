@@ -134,6 +134,7 @@ export interface Project {
   url: string;          // "Deploy to project" target
   building?: 'wrecked-building' | 'low-poly-house';  // omit → auto-alternate by index
   radioLine?: string;   // Commander Reza's proximity quip; invalid → stripped w/ warning, never drops the entry
+  classicHidden?: boolean; // hide from the classic page's project list (still a game POI) — used by commander-hq
 }
 ```
 
