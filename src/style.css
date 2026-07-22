@@ -1,5 +1,5 @@
 /* ============================================================
-   Reza's World — global styles
+   PLAYER 2 — global styles (Reza's playable portfolio)
    Dark, low-poly / military dusk theme.
    #ui is a pointer-events:none overlay; children re-enable as needed.
    ============================================================ */
@@ -802,4 +802,51 @@ body.classic-page {
   flex-wrap: wrap;
   gap: 7px;
   margin-top: 12px;
+}
+
+/* ============================================================
+   Battle City stage wipe (entry transition into the game)
+   NES-gray curtains close over the briefing, a blocky STAGE
+   card shows, then they open onto the world.
+   ============================================================ */
+.curtain {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: 51vh; /* slight overlap so no seam shows when closed */
+  background: #6b6b6b;
+  z-index: 120; /* above the briefing (100) */
+  pointer-events: auto;
+  transition: transform 350ms ease-in-out;
+}
+.curtain-top {
+  top: 0;
+  transform: translateY(-101%);
+}
+.curtain-bottom {
+  bottom: 0;
+  transform: translateY(101%);
+}
+.curtain.closed {
+  transform: translateY(0);
+}
+.stage-card {
+  position: fixed;
+  inset: 0;
+  z-index: 121;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: clamp(26px, 5.5vw, 48px);
+  letter-spacing: 0.55em;
+  text-indent: 0.55em; /* re-center: letter-spacing pads only the right side */
+  color: #101010;
+}
+.stage-card.show {
+  opacity: 1;
 }

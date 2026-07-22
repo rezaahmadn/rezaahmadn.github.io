@@ -127,7 +127,11 @@ async function boot(): Promise<void> {
   const loading = createLoading();
   const assets = await createAssetLibrary().load((f) => loading.setProgress(f));
   await loading.waitForEnter();
-  loading.hide();
+  // Battle City stage wipe: wait until the curtains fully cover the screen,
+  // build the whole world underneath the STAGE card, then reveal() at the end
+  // of boot — the authentic NES loading structure (and it keeps the heavy
+  // world-build from ever blocking the wipe animation).
+  await loading.hide();
 
   // waitForEnter() resolved on a real click/keypress, so the browser autoplay
   // policy is satisfied — start the looping background music now (post-gesture).
@@ -219,6 +223,10 @@ async function boot(): Promise<void> {
     _anchorWorld.y += 3.5; // float the bubble over the turret
     return projectToScreen(_anchorWorld);
   });
+
+  // World's built — render one frame beneath the curtains, then open them.
+  renderer.render(scene, camera);
+  loading.reveal();
 
   // --- Render loop ----------------------------------------------------------
   const clock = new THREE.Clock();

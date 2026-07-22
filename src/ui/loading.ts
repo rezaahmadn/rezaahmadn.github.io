@@ -1,27 +1,35 @@
 /**
  * ui/loading.ts — two-door briefing screen (PRD §8.1).
  *
- * While assets load: "WELCOME TO MY WORLD" + name/title/stack + contact links
- * (clickable during load) + progress bar. When ready, two doors appear:
- * [🎮 Explore my world] resolves waitForEnter() (pressing any key also works),
- * [📄 Just the facts] is a plain link to the classic page. hide() fades out
- * over 400ms (matches the CSS transition).
+ * While assets load: "PLAYER 2" + name/title/stack + contact links (clickable
+ * during load) + progress bar. When ready, "— press start —" pulses and two
+ * doors appear: [🎮 Press start] resolves waitForEnter() (pressing any key
+ * also works), [📄 Just the facts] is a plain link to the classic page.
+ *
+ * hide() plays a Battle City-style stage wipe: gray curtains close over the
+ * briefing, a blocky "STAGE 1" card shows, then the curtains open onto the
+ * world. (The name PLAYER 2 and this transition are an homage to Battle City
+ * on the NES — the game behind this site's whole tank idea.)
  */
 
 import type { LoadingUI } from '../types';
 
-const HEADLINE = 'WELCOME TO MY WORLD';
+const HEADLINE = 'PLAYER 2';
 const SUBTITLE = 'Reza Ahmad Nurfauzan — Software Engineer';
 const TAGLINE = 'React · React Native · TypeScript · Node.js';
+const READY_TEXT = '— press start —';
+const STAGE_TEXT = 'STAGE 1';
+const CURTAIN_CLOSE_MS = 350;
+const STAGE_HOLD_MS = 700;
+const CURTAIN_OPEN_MS = 450;
 const LINKS: Array<{ label: string; href: string; newTab: boolean }> = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/rezaahmadn/', newTab: true },
   { label: 'GitHub', href: 'https://github.com/rezaahmadn', newTab: true },
   { label: 'Email', href: 'mailto:rezaahmadn@gmail.com', newTab: false },
 ];
-const EXPLORE_LABEL = '🎮 Explore my world';
+const EXPLORE_LABEL = '🎮 Press start';
 const CLASSIC_LABEL = '📄 Just the facts';
 const CLASSIC_HREF = 'classic.html';
-const FADE_MS = 400;
 
 function mustGet(id: string): HTMLElement {
   const el = document.getElementById(id);
@@ -85,7 +93,7 @@ export function createLoading(): LoadingUI {
   function waitForEnter(): Promise<void> {
     ready = true;
     wrap.classList.add('ready');
-    status.textContent = '';
+    status.textContent = READY_TEXT;
     fill.style.width = '100%';
 
     return new Promise<void>((resolve) => {
@@ -108,12 +116,57 @@ export function createLoading(): LoadingUI {
     });
   }
 
-  function hide(): void {
-    wrap.classList.add('hidden');
-    window.setTimeout(() => {
-      wrap.style.display = 'none';
-    }, FADE_MS);
+  // Battle City stage wipe. hide() closes NES-gray curtains over the briefing
+  // and shows the blocky STAGE card, resolving once the screen is covered so
+  // main.ts can build the world underneath (like an NES loading a stage);
+  // reveal() then opens the curtains onto the finished world, enforcing a
+  // minimum card hold so the homage always reads even on instant builds.
+  const curtainTop = document.createElement('div');
+  curtainTop.className = 'curtain curtain-top';
+  const curtainBottom = document.createElement('div');
+  curtainBottom.className = 'curtain curtain-bottom';
+  const stageCard = document.createElement('div');
+  stageCard.className = 'stage-card';
+  stageCard.textContent = STAGE_TEXT;
+  let coveredAt = 0; // performance.now() when the curtains finished closing
+
+  function hide(): Promise<void> {
+    root.appendChild(curtainTop);
+    root.appendChild(curtainBottom);
+    root.appendChild(stageCard);
+
+    return new Promise<void>((resolve) => {
+      // Next frame → transition to closed (needs one painted frame first).
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          curtainTop.classList.add('closed');
+          curtainBottom.classList.add('closed');
+          window.setTimeout(() => {
+            // Curtains shut: show the stage card, drop the briefing beneath.
+            stageCard.classList.add('show');
+            wrap.style.display = 'none';
+            coveredAt = performance.now();
+            resolve();
+          }, CURTAIN_CLOSE_MS);
+        });
+      });
+    });
   }
 
-  return { setProgress, waitForEnter, hide };
+  function reveal(): void {
+    const heldFor = performance.now() - coveredAt;
+    const wait = Math.max(0, STAGE_HOLD_MS - heldFor);
+    window.setTimeout(() => {
+      stageCard.classList.remove('show');
+      curtainTop.classList.remove('closed');
+      curtainBottom.classList.remove('closed');
+      window.setTimeout(() => {
+        curtainTop.remove();
+        curtainBottom.remove();
+        stageCard.remove();
+      }, CURTAIN_OPEN_MS + 100);
+    }, wait);
+  }
+
+  return { setProgress, waitForEnter, hide, reveal };
 }

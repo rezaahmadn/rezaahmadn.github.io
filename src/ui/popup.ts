@@ -3,7 +3,7 @@
  *
  * open(project) fills title / blurb / tech chips / [Visit project →] (a real
  * <a target="_blank" rel="noopener"> to project.url) / [Keep exploring].
- * Footer: "— fired from Reza's World —". Sets input.paused=true while open;
+ * Footer: "— transmission ends —". Sets input.paused=true while open;
  * Esc or click-outside closes (input.paused=false). Enter animation (scale
  * .95→1 + fade, 150ms) is driven by the .open class in style.css.
  */

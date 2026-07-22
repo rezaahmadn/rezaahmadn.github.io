@@ -83,7 +83,7 @@ export function createHUD(seed: number, isTouch: boolean): HUD {
   // fades with the HUD legend.
   const seedChip = document.createElement('div');
   seedChip.className = 'seed';
-  const baseLabel = `world #${seed}`;
+  const baseLabel = `stage #${seed}`;
   seedChip.textContent = baseLabel;
   seedChip.title = 'Copy a shareable link to this world';
   root.appendChild(seedChip);

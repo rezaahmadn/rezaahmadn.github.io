@@ -1,4 +1,6 @@
-# PRD — "Reza's World": Tank-Driven Interactive Portfolio
+# PRD — "PLAYER 2": Tank-Driven Interactive Portfolio
+
+> **Brand note:** the site is named **PLAYER 2**, an homage to Battle City (NES) played two-player with Reza's late mother — the origin of the whole tank concept. By Reza's choice the homage stays visual/nominal only (name + Battle City stage-curtain entry transition); no origin story or dedication appears in site copy.
 
 ## 1. Overview
 
@@ -168,13 +170,13 @@ Rules that make this hold:
 
 ### 8.1 Briefing screen (loading + two doors, §2b)
 ```
-WELCOME TO MY WORLD
+PLAYER 2
 Reza Ahmad Nurfauzan — Software Engineer
 React · React Native · TypeScript · Node.js
-[LinkedIn] [Email]
+[LinkedIn] [GitHub] [Email]
 [———— progress bar ————]  Deploying tank… 47%
 ```
-When ready the status line clears and two doors appear: `🎮 Explore my world` (button; any non-Tab/Shift/Enter key also enters) and `📄 Just the facts` (link → classic.html). Fade out 400 ms on enter.
+When ready the status line becomes a pulsing `— press start —` and two doors appear: `🎮 Press start` (button; any non-Tab/Shift/Enter key also enters) and `📄 Just the facts` (link → classic.html). On enter, a **Battle City stage wipe** plays: NES-gray curtains close (~350 ms), a blocky `STAGE 1` card shows (~700 ms), curtains open (~450 ms) onto the world.
 
 ### 8.2 HUD (top-left transparent legend; fades to 30% opacity after first shot)
 ```
@@ -182,11 +184,11 @@ W A S D  drive      ← →  turret      SPACE  fire
 📄 classic site                                  ← escape-hatch link under the legend
 ```
 Touch devices instead: `left stick  drive      drag right side  turret      🔘  fire`.
-Bottom-left: transparent `world #<seed>` (click = copy shareable URL, flash "copied!") with `sites n/N` counter above it.
+Bottom-left: transparent `stage #<seed>` (click = copy shareable URL, flash "copied!") with `sites n/N` counter above it.
 
 ### 8.3 Intro transmission (bubble anchored above the tank; ~45 chars/s typewriter — first SPACE/click completes the line, next advances; step dots shown)
 Header: `COMMANDER REZA — TRANSMISSION`
-1. `*bzzt* Commander Reza here — welcome to my world, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.`
+1. `*bzzt* Commander Reza here — glad you pressed start, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.`
 2. `Controls, listen up: WASD drives. ◄ ► swings the turret. SPACE fires. Go on — squeeze one off. Over.` — touch: `Controls, listen up: left stick drives. Drag the right side to swing the turret. Tap FIRE. Go on — squeeze one off. Over.`
 3. `No missions. No score. No ending. See a building with a floating sign? That's one of my projects — put a shell near it and I'll send you the field report. Out.`
 After step 3 the bubble dismisses permanently (per-visit; no persistence needed).

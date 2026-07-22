@@ -162,7 +162,11 @@ export interface CameraRig {
 export interface LoadingUI {
   setProgress(p: number, label?: string): void;
   waitForEnter(): Promise<void>;
-  hide(): void;
+  /** Close the Battle City curtains over the briefing; resolves once the screen
+   *  is fully covered (build the world underneath, then call reveal()). */
+  hide(): Promise<void>;
+  /** Open the curtains onto the world (enforces a minimum STAGE-card hold). */
+  reveal(): void;
 }
 
 export interface IntroDialog {

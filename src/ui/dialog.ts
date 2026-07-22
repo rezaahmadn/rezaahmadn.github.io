@@ -19,7 +19,7 @@ interface Step {
 
 const STEPS: Step[] = [
   {
-    text: '*bzzt* Commander Reza here — welcome to my world, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.',
+    text: '*bzzt* Commander Reza here — glad you pressed start, soldier. By day I ship web and mobile apps. Out here, I drive the tank. Over.',
   },
   {
     text: 'Controls, listen up: WASD drives. ◄ ► swings the turret. SPACE fires. Go on — squeeze one off. Over.',
