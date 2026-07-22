@@ -583,6 +583,13 @@ body.is-touch .touch-only {
   text-align: center;
   transition: opacity 250ms ease;
   z-index: 14;
+  /* Boxed panel (matches the intro bubble) — bare text was unreadable over
+     bright terrain. */
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 10px 16px 12px;
 }
 .radio.hidden {
   opacity: 0;
@@ -593,15 +600,13 @@ body.is-touch .touch-only {
   font-size: 10px;
   letter-spacing: 0.18em;
   color: var(--accent);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
   animation: pulse 1.6s ease-in-out infinite;
 }
 .radio-body {
-  margin-top: 4px;
+  margin-top: 5px;
   font-size: 14px;
   line-height: 1.45;
   color: var(--ink);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
   min-height: 1.4em;
 }
 
