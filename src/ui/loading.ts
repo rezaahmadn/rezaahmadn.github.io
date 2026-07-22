@@ -15,6 +15,7 @@ const SUBTITLE = 'Reza Ahmad Nurfauzan — Software Engineer';
 const TAGLINE = 'React · React Native · TypeScript · Node.js';
 const LINKS: Array<{ label: string; href: string; newTab: boolean }> = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/in/rezaahmadn/', newTab: true },
+  { label: 'GitHub', href: 'https://github.com/rezaahmadn', newTab: true },
   { label: 'Email', href: 'mailto:rezaahmadn@gmail.com', newTab: false },
 ];
 const EXPLORE_LABEL = '🎮 Explore my world';

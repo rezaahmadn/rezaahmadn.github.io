@@ -10,6 +10,7 @@
 import { getProjects } from './data/projects';
 
 const LINKEDIN = 'https://www.linkedin.com/in/rezaahmadn/';
+const GITHUB = 'https://github.com/rezaahmadn';
 const EMAIL = 'rezaahmadn@gmail.com';
 
 const ABOUT =
@@ -89,11 +90,9 @@ hero.appendChild(el('h1', undefined, 'Reza Ahmad Nurfauzan'));
 hero.appendChild(el('p', 'c-role', 'Software Engineer — React · React Native · TypeScript · Node.js'));
 const heroLinks = el('div', 'c-links');
 heroLinks.appendChild(link('LinkedIn', LINKEDIN));
+heroLinks.appendChild(link('GitHub', GITHUB));
 heroLinks.appendChild(link('Email', `mailto:${EMAIL}`, false));
 hero.appendChild(heroLinks);
-const gameDoor = el('a', 'c-game-door', '🎮 Or drive a tank through all this instead →');
-(gameDoor as HTMLAnchorElement).href = './';
-hero.appendChild(gameDoor);
 root.appendChild(hero);
 
 // --- About ------------------------------------------------------------------
@@ -101,24 +100,8 @@ const about = section('About');
 about.appendChild(el('p', undefined, ABOUT));
 root.appendChild(about);
 
-// --- Projects (from the shared data) ---------------------------------------
-const projects = section('Projects');
-for (const p of getProjects()) {
-  const card = el('article', 'c-project');
-  const head = el('div', 'c-project-head');
-  head.appendChild(el('h3', undefined, p.title));
-  head.appendChild(link('Visit →', p.url));
-  card.appendChild(head);
-  card.appendChild(el('p', undefined, p.blurb));
-  const chips = el('div', 'chips');
-  for (const t of p.tech) chips.appendChild(el('span', 'chip', t));
-  card.appendChild(chips);
-  projects.appendChild(card);
-}
-root.appendChild(projects);
-
-// --- Skills -----------------------------------------------------------------
-const skills = section('Skills');
+// --- Technical Skills -------------------------------------------------------
+const skills = section('Technical Skills');
 const dl = el('dl', 'c-skills');
 for (const [k, v] of SKILLS) {
   dl.appendChild(el('dt', undefined, k));
@@ -142,6 +125,25 @@ for (const e of EXPERIENCE) {
 }
 root.appendChild(exp);
 
+// --- Projects (from the shared data) ---------------------------------------
+const projects = section('Projects');
+const gameDoor = el('a', 'c-game-door', '🎮 Or drive a tank through all this instead →');
+(gameDoor as HTMLAnchorElement).href = './';
+projects.appendChild(gameDoor);
+for (const p of getProjects()) {
+  const card = el('article', 'c-project');
+  const head = el('div', 'c-project-head');
+  head.appendChild(el('h3', undefined, p.title));
+  head.appendChild(link('Visit →', p.url));
+  card.appendChild(head);
+  card.appendChild(el('p', undefined, p.blurb));
+  const chips = el('div', 'chips');
+  for (const t of p.tech) chips.appendChild(el('span', 'chip', t));
+  card.appendChild(chips);
+  projects.appendChild(card);
+}
+root.appendChild(projects);
+
 // --- Education --------------------------------------------------------------
 const edu = section('Education');
 const eduList = el('ul', 'c-edu');
@@ -161,6 +163,8 @@ footLine.append('Open a channel: ');
 footLine.appendChild(link('Email', `mailto:${EMAIL}`, false));
 footLine.append(' · ');
 footLine.appendChild(link('LinkedIn', LINKEDIN));
+footLine.append(' · ');
+footLine.appendChild(link('GitHub', GITHUB));
 foot.appendChild(footLine);
 foot.appendChild(el('p', 'c-fine', '— this page and the tank world are rendered from the same data —'));
 root.appendChild(foot);
