@@ -84,6 +84,11 @@ export function createInput(canvas: HTMLCanvasElement): InputSystem {
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(pointer: coarse)').matches;
 
+  // Declared BEFORE activateTouch() can run below: on coarse-pointer devices
+  // activateTouch() executes immediately during setup, and maybeShowRotateHint
+  // reading this any later in the file is a TDZ ReferenceError that kills boot.
+  let rotateHintShown = false;
+
   function activateTouch(): void {
     if (obj.isTouch) return;
     obj.isTouch = true;
@@ -137,7 +142,6 @@ export function createInput(canvas: HTMLCanvasElement): InputSystem {
   }
 
   // Portrait-only, dismissible "↻ rotate for the best view" hint, shown once (§5.6).
-  let rotateHintShown = false;
   function maybeShowRotateHint(root: HTMLElement): void {
     if (rotateHintShown) return;
     if (window.innerHeight <= window.innerWidth) return; // landscape already

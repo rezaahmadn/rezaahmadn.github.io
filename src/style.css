@@ -850,3 +850,11 @@ body.classic-page {
 .stage-card.show {
   opacity: 1;
 }
+
+/* On narrow (portrait phone) screens the touch legend wraps to two lines —
+   drop the classic-site link below it so they don't overlap. */
+@media (max-width: 520px) {
+  .classic-link {
+    top: calc(96px + var(--safe-top));
+  }
+}
