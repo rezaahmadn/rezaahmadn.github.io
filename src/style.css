@@ -511,6 +511,37 @@ body.is-touch .touch-only {
 }
 
 /* ============================================================
+   Navigation minimap (radar)
+   Top-right, tucked below the mute button (top:14 + 40px tall).
+   Purely a HUD indicator — pointer-events stay off so it never
+   eats touches over the canvas.
+   ============================================================ */
+.minimap {
+  position: fixed;
+  top: calc(64px + var(--safe-top));
+  right: calc(14px + var(--safe-right));
+  left: auto;
+  bottom: auto;
+  z-index: 13;
+  pointer-events: none;
+  user-select: none;
+  border-radius: 50%;
+  /* Slightly see-through so it recedes behind the intro/radio dialog when they
+     overlap, rather than competing with it. */
+  opacity: 0.82;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+}
+.minimap canvas {
+  display: block;
+  border-radius: 50%;
+}
+@media (max-width: 520px) {
+  .minimap {
+    top: calc(60px + var(--safe-top));
+  }
+}
+
+/* ============================================================
    Briefing screen additions (two-door entry)
    ============================================================ */
 .loading .tagline {

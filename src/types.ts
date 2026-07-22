@@ -195,6 +195,19 @@ export interface HUD {
 }
 
 /**
+ * Top-right navigation radar (§8.2-adjacent). North-up disc of the whole
+ * playfield: static terrain/water base, every POI as a dot (amber = unvisited,
+ * teal = visited), and the tank as an arrow that rotates with the hull heading.
+ */
+export interface MinimapSystem {
+  /** Redraw the dynamic layer. `forward` is the tank's world-space heading. */
+  update(tankPos: THREE.Vector3, forward: THREE.Vector3): void;
+  /** Flip a POI to its "visited" style. */
+  setVisited(id: string): void;
+  element: HTMLElement;
+}
+
+/**
  * Commander Reza's radio: non-blocking transmission toasts (proximity quips)
  * plus the one input-pausing finale card shown when every site is visited.
  */

@@ -39,6 +39,7 @@ import { createLoading } from './ui/loading';
 import { createIntroDialog } from './ui/dialog';
 import { createPopup } from './ui/popup';
 import { createHUD } from './ui/hud';
+import { createMinimap } from './ui/minimap';
 
 // --- Canvas -----------------------------------------------------------------
 const canvas = document.getElementById('app') as HTMLCanvasElement;
@@ -190,6 +191,8 @@ async function boot(): Promise<void> {
   //    every site has been visited, Commander Reza sends the finale.
   const popup = createPopup(input);
   const hud = createHUD(seed, input.isTouch);
+  // Navigation radar: the whole playfield with POI dots + the tank's heading.
+  const minimap = createMinimap(ctx, poi.pois, input.isTouch);
   const visited = new Set<string>();
   const totalSites = poi.pois.length;
   hud.setSites(0, totalSites);
@@ -200,6 +203,7 @@ async function boot(): Promise<void> {
     if (visited.has(id)) return;
     visited.add(id);
     hud.setSites(visited.size, totalSites);
+    minimap.setVisited(id);
     if (visited.size === totalSites && totalSites > 0) {
       const check = window.setInterval(() => {
         if (!popup.isOpen) {
@@ -217,6 +221,8 @@ async function boot(): Promise<void> {
 
   // 7) Intro speech bubble, anchored just above the tank each frame.
   const _anchorWorld = new THREE.Vector3();
+  // Tank forward (world −Z at heading 0), reused each frame for the minimap.
+  const _mapForward = new THREE.Vector3();
   const dialog = createIntroDialog(input.isTouch);
   dialog.start(() => {
     _anchorWorld.copy(tank.position);
@@ -262,6 +268,11 @@ async function boot(): Promise<void> {
     poi.update(dt, tank.position);
     fx.update(dt);
     dialog.update();
+
+    // Minimap: tank forward = object local −Z rotated by the hull quaternion
+    // (updated in tank.update above); flattened to xz inside the minimap.
+    _mapForward.set(0, 0, -1).applyQuaternion(tank.object.quaternion);
+    minimap.update(tank.position, _mapForward);
 
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
