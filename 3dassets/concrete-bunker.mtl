@@ -1,0 +1,31 @@
+# Exported by three-d-stage
+newmtl concrete
+Kd 0.3231 0.3050 0.2623
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl concrete_dark
+Kd 0.1590 0.1470 0.1221
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl slit_void
+Kd 0.0070 0.0065 0.0048
+Ks 0.2000 0.2000 0.2000
+Ns 0
+d 1.0000
+
+newmtl steel
+Kd 0.1022 0.1170 0.1384
+Ks 0.2000 0.2000 0.2000
+Ns 80
+d 1.0000
+
+newmtl dirt
+Kd 0.1946 0.1441 0.0782
+Ks 0.2000 0.2000 0.2000
+Ns 0
+d 1.0000
+

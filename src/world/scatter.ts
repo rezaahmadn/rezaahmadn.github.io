@@ -4,10 +4,11 @@
  * generateWorld(ctx) runs once at load, entirely from ctx.rng, in a fixed order
  * so the same seed always yields the same world:
  *   1. POIs   — one per project in data/projects.ts (rejection-sampled).
- *   2. Decoration — trees / bushes / rocks around (but clear of) the POIs.
+ *   2. Decoration — ambience buildings (the ex-POI house/wreck assets), then
+ *      trees / bushes / rocks around (but clear of) the POIs.
  *
- * Trees and rocks register colliders; bushes are drive-through. Trees use a
- * small trunk-sized radius so the tank is stopped near the trunk, not the canopy.
+ * Buildings and rocks register footprint colliders; trees a small trunk-sized
+ * radius (stopped near the trunk, not the canopy); bushes are drive-through.
  */
 
 import * as THREE from 'three';
@@ -46,6 +47,14 @@ const POI_SOFT_MAX = 12;
 const TREE_HEIGHT = 4;
 const BUSH_HEIGHT = 1.2;
 const ROCK_HEIGHT = 1.4;
+/** Ambience buildings (ex-POI assets) normalize by LARGEST dimension — the
+ *  low-poly-house is wide and flat, so height-normalizing would inflate it. */
+const HOUSE_MAX_DIM = 7;
+const WRECK_MAX_DIM = 6.5;
+const DECO_HOUSES = 4;
+const DECO_WRECKS = 3;
+/** Buildings need breathing room from every other placed item. */
+const BUILDING_SPACING = 12;
 /** Uniform per-instance scale jitter: ±15%. */
 const SCALE_JITTER = 0.15;
 
@@ -60,6 +69,8 @@ const TREE_KEYS: AssetKey[] = ['low-poly-tree', 'lowpoly-oak-tree'];
 interface Placed {
   x: number;
   z: number;
+  /** Radius later candidates must stay outside of (buildings > shrubs). */
+  keepOut: number;
 }
 
 function dist2(ax: number, az: number, bx: number, bz: number): number {
@@ -81,8 +92,9 @@ function slopeSpread(ctx: GameContext, x: number, z: number): number {
 }
 
 /**
- * Normalize a clone to `targetHeight`, apply yaw + ±15% jitter, and seat its
- * base on the ground at (x, groundHeight, z). Returns the xz footprint radius.
+ * Normalize a clone to `target` (its height, or its largest dimension when
+ * `byMaxDim` — right for wide/flat assets like the house), apply yaw + jitter,
+ * and seat its base on the ground. Returns the xz footprint radius.
  */
 function seat(
   obj: THREE.Object3D,
@@ -90,8 +102,9 @@ function seat(
   z: number,
   groundHeight: number,
   yaw: number,
-  targetHeight: number,
+  target: number,
   jitter: number,
+  byMaxDim = false,
 ): number {
   obj.rotation.y = yaw;
   obj.scale.setScalar(1);
@@ -99,8 +112,9 @@ function seat(
   obj.updateMatrixWorld(true);
 
   const box0 = new THREE.Box3().setFromObject(obj);
-  const natural = box0.max.y - box0.min.y || 1;
-  const s = (targetHeight / natural) * jitter;
+  const size0 = box0.getSize(new THREE.Vector3());
+  const natural = (byMaxDim ? Math.max(size0.x, size0.y, size0.z) : size0.y) || 1;
+  const s = (target / natural) * jitter;
   obj.scale.setScalar(s);
   obj.updateMatrixWorld(true);
 
@@ -182,29 +196,49 @@ function scatterDecoration(
   const decoColliders: Collider[] = [];
   const placed: Placed[] = [];
 
+  // Kinds place in order; buildings go FIRST so later greenery nestles around
+  // them (each placed item's keepOut stops trees spawning inside walls).
   const kinds: Array<{
     count: number;
-    height: number;
-    isRock: boolean;
-    isTree: boolean;
+    size: number;
+    byMaxDim?: boolean;
+    /** footprint: solid at seat() radius · trunk: small fixed radius · none */
+    collider: 'footprint' | 'trunk' | 'none';
+    /** Min distance this kind demands from everything already placed. */
+    spacing?: number;
     pick: () => AssetKey;
   }> = [
     {
+      count: DECO_HOUSES,
+      size: HOUSE_MAX_DIM,
+      byMaxDim: true,
+      collider: 'footprint',
+      spacing: BUILDING_SPACING,
+      pick: () => 'low-poly-house',
+    },
+    {
+      count: DECO_WRECKS,
+      size: WRECK_MAX_DIM,
+      byMaxDim: true,
+      collider: 'footprint',
+      spacing: BUILDING_SPACING,
+      pick: () => 'wrecked-building',
+    },
+    {
       count: DECO_TREES,
-      height: TREE_HEIGHT,
-      isRock: false,
-      isTree: true,
+      size: TREE_HEIGHT,
+      collider: 'trunk',
       pick: () => (ctx.rng() < 0.5 ? TREE_KEYS[0] : TREE_KEYS[1]),
     },
-    { count: DECO_BUSHES, height: BUSH_HEIGHT, isRock: false, isTree: false, pick: () => 'low-poly-bush' },
-    { count: DECO_ROCKS, height: ROCK_HEIGHT, isRock: true, isTree: false, pick: () => 'low-poly-rocks' },
+    { count: DECO_BUSHES, size: BUSH_HEIGHT, collider: 'none', pick: () => 'low-poly-bush' },
+    { count: DECO_ROCKS, size: ROCK_HEIGHT, collider: 'footprint', pick: () => 'low-poly-rocks' },
   ];
 
   const spawnMin2 = DECO_MIN_FROM_SPAWN * DECO_MIN_FROM_SPAWN;
   const poiMin2 = DECO_MIN_FROM_POI * DECO_MIN_FROM_POI;
-  const spacing2 = DECO_MIN_SPACING * DECO_MIN_SPACING;
 
   for (const kind of kinds) {
+    const kindGap = kind.spacing ?? DECO_MIN_SPACING;
     for (let i = 0; i < kind.count; i++) {
       for (let attempt = 0; attempt < DECO_ATTEMPTS; attempt++) {
         const x = (ctx.rng() * 2 - 1) * WORLD_BOUND;
@@ -225,8 +259,10 @@ function scatterDecoration(
         }
         if (!ok) continue;
 
+        // Respect both this kind's demanded gap and each placed item's keepOut.
         for (const p of placed) {
-          if (dist2(x, z, p.x, p.z) < spacing2) {
+          const need = Math.max(kindGap, p.keepOut);
+          if (dist2(x, z, p.x, p.z) < need * need) {
             ok = false;
             break;
           }
@@ -236,19 +272,24 @@ function scatterDecoration(
         const yaw = ctx.rng() * Math.PI * 2;
         const jitter = 1 + (ctx.rng() * 2 - 1) * SCALE_JITTER;
         const obj = ctx.assets.clone(kind.pick());
-        const radius = seat(obj, x, z, ground.height, yaw, kind.height, jitter);
+        const radius = seat(obj, x, z, ground.height, yaw, kind.size, jitter, kind.byMaxDim);
 
         ctx.scene.add(obj);
         decoration.push(obj);
-        placed.push({ x, z });
+        placed.push({
+          x,
+          z,
+          // Buildings fence off their walls (+1 margin); small stuff just its spot.
+          keepOut: kind.collider === 'footprint' && kind.byMaxDim ? radius + 1 : DECO_MIN_SPACING,
+        });
 
-        if (kind.isRock) {
+        if (kind.collider === 'footprint') {
           const collider: Collider = { x, z, radius };
           decoColliders.push(collider);
           ctx.colliders.push(collider);
-        } else if (kind.isTree) {
-          // Trees block the tank near the trunk — use a small trunk radius, not
-          // the wide canopy footprint that seat() returns in `radius`.
+        } else if (kind.collider === 'trunk') {
+          // Trees block the tank near the trunk — small fixed radius, not the
+          // wide canopy footprint that seat() returns in `radius`.
           const collider: Collider = { x, z, radius: TREE_TRUNK_RADIUS };
           decoColliders.push(collider);
           ctx.colliders.push(collider);

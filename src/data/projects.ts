@@ -9,13 +9,26 @@
  * `building` is optional — omit it to auto-alternate wrecked-building / low-poly-house.
  */
 
+/** Buildings a project may use as its POI landmark. */
+export type PoiBuilding =
+  | 'wrecked-building'
+  | 'low-poly-house'
+  | 'low-poly-bank'
+  | 'watchtower'
+  | 'concrete-bunker'
+  | 'relay-station'
+  | 'billboard-tower'
+  | 'command-post';
+
 export interface Project {
   id: string;
   title: string; // hovering label + popup title
   blurb: string; // 1–2 sentences shown in the popup (SITREP)
   tech: string[]; // chips (ARMAMENT)
-  url: string; // "Deploy to project" target
-  building?: 'wrecked-building' | 'low-poly-house'; // omit → auto-alternate by index
+  /** "Deploy to project" target. Omit → the popup/classic page show CLASSIFIED
+   *  instead of a link (e.g. internal/backend work with nothing public). */
+  url?: string;
+  building?: PoiBuilding; // omit → auto-alternate wrecked/house by index
   /** Commander Reza's radio quip when the tank first drives near this POI. */
   radioLine?: string;
   /** Hide from the classic page's project list (still a POI in the game) —
@@ -23,7 +36,6 @@ export interface Project {
   classicHidden?: boolean;
 }
 
-// Placeholder used for every TODO url so all buttons work before launch.
 const LINKEDIN = 'https://www.linkedin.com/in/rezaahmadn/';
 
 const PROJECTS: Project[] = [
@@ -33,8 +45,8 @@ const PROJECTS: Project[] = [
     blurb:
       'A decentralized wallet and payment app for Indonesia — crypto top-ups, an IDR-backed stablecoin, everyday payments, and withdrawals to local banks and e-wallets. Live on Google Play.',
     tech: ['React Native', 'TypeScript', 'Solana', 'Zustand', 'Fastlane'],
-    url: LINKEDIN, // TODO (Play Store)
-    building: 'wrecked-building',
+    url: 'https://play.google.com/store/apps/details?id=to.jagad.wallet',
+    building: 'low-poly-bank',
     radioLine:
       "That's J-Wallet HQ, soldier. A crypto wallet for Indonesia — live on Google Play. Fire on it for the field report. Over.",
   },
@@ -44,8 +56,8 @@ const PROJECTS: Project[] = [
     blurb:
       'The mobile wallet ported into a TON-based Telegram Mini App at ~90% feature parity, with a from-scratch Storybook component library and deep Telegram WebApp SDK integration.',
     tech: ['React', 'TypeScript', 'Vite', 'styled-components', 'TON'],
-    url: LINKEDIN, // TODO (Telegram)
-    building: 'low-poly-house',
+    url: 'https://t.me/JagadWalletBot',
+    building: 'watchtower',
     radioLine:
       'Telegram outpost ahead. We rebuilt the entire wallet inside Telegram at ninety percent parity. Shell it for details. Over.',
   },
@@ -55,8 +67,8 @@ const PROJECTS: Project[] = [
     blurb:
       'The Node.js/TypeScript engine behind J-Wallet: crypto-to-fiat settlement, payment-link APIs, escrow workers, and bank virtual-account top-ups — with Jest/Supertest coverage.',
     tech: ['Node.js', 'TypeScript', 'Express', 'Prisma', 'Solana'],
-    url: LINKEDIN, // TODO
-    building: 'wrecked-building',
+    // No public link — internal backend. The popup shows CLASSIFIED instead.
+    building: 'concrete-bunker',
     radioLine:
       'That bunker runs the backend — settlements, escrow, payment rails. Rock solid under fire. Take the shot. Over.',
   },
@@ -66,8 +78,8 @@ const PROJECTS: Project[] = [
     blurb:
       "A Telegram bot built for the Coinfest Asia web3 conference that became Jagad's ongoing onboarding path — simple service access straight from Telegram.",
     tech: ['TypeScript', 'Telegram Bot API'],
-    url: LINKEDIN, // TODO (Telegram)
-    building: 'low-poly-house',
+    url: 'https://t.me/easyIDRBot',
+    building: 'relay-station',
     radioLine:
       'Comms relay station. Built a Telegram bot for Coinfest Asia — kept serving long after the conference ended. Light it up. Over.',
   },
@@ -77,8 +89,8 @@ const PROJECTS: Project[] = [
     blurb:
       'Landing page rework and "Stack", an operations-management app for an out-of-home advertising platform.',
     tech: ['Vue.js', 'SCSS', 'Node.js', 'Firebase'],
-    url: LINKEDIN, // TODO (website)
-    building: 'low-poly-house',
+    url: 'https://adxasia.co.id/',
+    building: 'billboard-tower',
     radioLine:
       'Old ADX garrison, my first tour. Vue.js ops platform and a landing-page rework. One round, on target. Over.',
   },
@@ -89,7 +101,7 @@ const PROJECTS: Project[] = [
       'Software engineer with ~4 years across web and mobile. I ship features end to end — React Native and React/TypeScript frontends, Node.js backends. This world is my portfolio; the tank is a bonus.',
     tech: ['About me'],
     url: LINKEDIN,
-    building: 'wrecked-building',
+    building: 'command-post',
     radioLine:
       "That's my HQ, soldier. The full story on your commander is inside. Knock first — with the cannon. Over.",
     classicHidden: true, // the classic page's About section already covers this
@@ -131,7 +143,8 @@ export function validateProjects(raw: readonly Project[]): Project[] {
     if (!isNonEmptyString(p.blurb)) problems.push('blurb');
     if (!Array.isArray(p.tech) || p.tech.length === 0 || !p.tech.every(isNonEmptyString))
       problems.push('tech');
-    if (!isValidUrl(p.url)) problems.push('url');
+    // url is optional (absent → CLASSIFIED in the UI), but if present it must parse.
+    if (p.url !== undefined && !isValidUrl(p.url)) problems.push('url');
 
     if (problems.length > 0) {
       console.error(

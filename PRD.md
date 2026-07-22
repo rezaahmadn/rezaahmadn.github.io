@@ -142,16 +142,18 @@ export interface Project {
 
 **Everything downstream derives from this array — POI count, placement, labels, hit zones, popups.** Nothing else in the codebase may reference a specific project id, count, or hardcode per-project behavior.
 
-Content (from Reza's resume — **URLs marked TODO must be filled by Reza before launch**; use `https://www.linkedin.com/in/rezaahmadn/` as a placeholder so every button works):
+Content (URLs are live; `url` omitted ⇒ the popup/classic page show **CLASSIFIED** instead of a link). Each project has a hand-modeled landmark building (the ex-POI `wrecked-building`/`low-poly-house` are now scattered ambience decoration with colliders):
 
-| id | title | blurb | tech | url | building |
-|---|---|---|---|---|---|
-| `jwallet-mobile` | J-Wallet Mobile App | A decentralized wallet and payment app for Indonesia — crypto top-ups, an IDR-backed stablecoin, everyday payments, and withdrawals to local banks and e-wallets. Live on Google Play. | React Native, TypeScript, Solana, Zustand, Fastlane | TODO (Play Store) | wrecked-building |
-| `jwallet-miniapp` | J-Wallet Telegram Mini App | The mobile wallet ported into a TON-based Telegram Mini App at ~90% feature parity, with a from-scratch Storybook component library and deep Telegram WebApp SDK integration. | React, TypeScript, Vite, styled-components, TON | TODO (Telegram) | low-poly-house |
-| `jwallet-backend` | J-Wallet Backend | The Node.js/TypeScript engine behind J-Wallet: crypto-to-fiat settlement, payment-link APIs, escrow workers, and bank virtual-account top-ups — with Jest/Supertest coverage. | Node.js, TypeScript, Express, Prisma, Solana | TODO | wrecked-building |
-| `easyidrbot` | easyIDRBot | A Telegram bot built for the Coinfest Asia web3 conference that became Jagad's ongoing onboarding path — simple service access straight from Telegram. | TypeScript, Telegram Bot API | TODO (Telegram) | low-poly-house |
-| `adx-asia` | ADX Asia Platform | Landing page rework and "Stack", an operations-management app for an out-of-home advertising platform. | Vue.js, SCSS, Node.js, Firebase | TODO (website) | low-poly-house |
-| `commander-hq` | Commander HQ — About Reza | Software engineer with ~4 years across web and mobile. I ship features end to end — React Native and React/TypeScript frontends, Node.js backends. This world is my portfolio; the tank is a bonus. | About me | `https://www.linkedin.com/in/rezaahmadn/` | wrecked-building |
+| id | title | url | building (landmark) |
+|---|---|---|---|
+| `jwallet-mobile` | J-Wallet Mobile App | play.google.com/store/apps/details?id=to.jagad.wallet | `low-poly-bank` (columned bank + gold coin) |
+| `jwallet-miniapp` | J-Wallet Telegram Mini App | t.me/JagadWalletBot | `watchtower` (Telegram outpost) |
+| `jwallet-backend` | J-Wallet Backend | — (CLASSIFIED) | `concrete-bunker` |
+| `easyidrbot` | easyIDRBot | t.me/easyIDRBot | `relay-station` (dish + antenna) |
+| `adx-asia` | ADX Asia Platform | adxasia.co.id | `billboard-tower` (OOH billboard) |
+| `commander-hq` | Commander HQ — About Reza | linkedin.com/in/rezaahmadn | `command-post` (flag + sandbags) |
+
+(Blurbs/tech unchanged — see `src/data/projects.ts`, the source of truth.)
 
 ### 7.4 Adding a project later (design requirement, not just convenience)
 
@@ -244,5 +246,5 @@ Suggested verification when driving this with the Chrome/browser MCP or manually
 - **Stretch:** track-link crawl animation, day/night toggle, birds.
 
 ## 12. Open items for Reza
-1. Replace the 5 `TODO` URLs in `data/projects.ts` (Play Store, Telegram ×2, backend link or GitHub, ADX website).
+1. ~~Replace the TODO URLs~~ — done (real links live; backend intentionally CLASSIFIED with no link).
 2. Optional: a favicon + `<meta>` OG tags ("Reza's World — drive a tank through my portfolio") before sharing the link.

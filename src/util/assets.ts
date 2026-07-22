@@ -21,6 +21,13 @@ const FILES: Record<AssetKey, string> = {
   'lowpoly-oak-tree': 'lowpoly-oak-tree.glb',
   'low-poly-bush': 'low-poly-bush.glb',
   'low-poly-rocks': 'low-poly-rocks.glb',
+  // Per-project POI landmarks (hand-modeled by Reza):
+  'low-poly-bank': 'low-poly-bank.glb',
+  watchtower: 'watchtower.glb',
+  'concrete-bunker': 'concrete-bunker.glb',
+  'relay-station': 'relay-station.glb',
+  'billboard-tower': 'billboard-tower.glb',
+  'command-post': 'command-post.glb',
 };
 
 // Resolve /assets relative to the app base so it works under sub-path hosting.

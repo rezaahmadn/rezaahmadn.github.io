@@ -123,12 +123,23 @@ describe('project validation (PRD §7.4)', () => {
     expect(console.warn).toHaveBeenCalled();
   });
 
+  it('accepts an entry with no url (classified) but rejects a present-but-bad url', () => {
+    const raw: Project[] = [
+      { id: 'classified', title: 'Secret', blurb: 'x', tech: ['x'] }, // no url → ok
+      { id: 'bad', title: 'Bad', blurb: 'x', tech: ['x'], url: 'not-a-url' }, // present+bad → rejected
+    ];
+    const result = validateProjects(raw);
+    expect(result.map((p) => p.id)).toEqual(['classified']);
+    expect(result[0].url).toBeUndefined();
+  });
+
   it('getProjects() returns the real, all-valid project list', () => {
     const projects = getProjects();
     expect(projects.length).toBeGreaterThan(0);
     for (const p of projects) {
       expect(p.id.length).toBeGreaterThan(0);
-      expect(() => new URL(p.url)).not.toThrow();
+      // url is optional (classified sites); when present it must parse.
+      if (p.url !== undefined) expect(() => new URL(p.url as string)).not.toThrow();
       expect(p.building).toBeDefined();
     }
   });

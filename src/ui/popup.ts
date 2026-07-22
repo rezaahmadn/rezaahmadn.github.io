@@ -40,6 +40,7 @@ export function createPopup(input: InputSystem): Popup {
       <div class="chips"></div>
       <div class="actions">
         <a class="btn primary" target="_blank" rel="noopener"></a>
+        <span class="btn classified">⛔ CLASSIFIED</span>
         <button class="btn ghost" type="button"></button>
       </div>
       <div class="footer"></div>
@@ -55,6 +56,7 @@ export function createPopup(input: InputSystem): Popup {
   const blurbEl = container.querySelector('.blurb') as HTMLElement;
   const chipsEl = container.querySelector('.chips') as HTMLElement;
   const visitEl = container.querySelector('.btn.primary') as HTMLAnchorElement;
+  const classifiedEl = container.querySelector('.btn.classified') as HTMLElement;
   const closeEl = container.querySelector('.btn.ghost') as HTMLButtonElement;
   const footerEl = container.querySelector('.footer') as HTMLElement;
 
@@ -69,7 +71,15 @@ export function createPopup(input: InputSystem): Popup {
   function open(project: Project): void {
     titleEl.textContent = project.title;
     blurbEl.textContent = project.blurb;
-    visitEl.href = project.url;
+    // No url → the site is CLASSIFIED (internal work with nothing public).
+    if (project.url) {
+      visitEl.href = project.url;
+      visitEl.style.display = '';
+      classifiedEl.style.display = 'none';
+    } else {
+      visitEl.style.display = 'none';
+      classifiedEl.style.display = '';
+    }
 
     chipsEl.replaceChildren();
     for (const t of project.tech) {

@@ -1,0 +1,31 @@
+# Exported by three-d-stage
+newmtl dark_metal
+Kd 0.0423 0.0467 0.0545
+Ks 0.2000 0.2000 0.2000
+Ns 60
+d 1.0000
+
+newmtl red_paint
+Kd 0.5776 0.0203 0.0130
+Ks 0.2000 0.2000 0.2000
+Ns 90
+d 1.0000
+
+newmtl steel
+Kd 0.2582 0.2789 0.3050
+Ks 0.2000 0.2000 0.2000
+Ns 100
+d 1.0000
+
+newmtl red_dark
+Kd 0.2747 0.0086 0.0060
+Ks 0.2000 0.2000 0.2000
+Ns 80
+d 1.0000
+
+newmtl billboard_face
+Kd 0.8879 0.8632 0.8070
+Ks 0.2000 0.2000 0.2000
+Ns 40
+d 1.0000
+

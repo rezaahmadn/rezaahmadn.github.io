@@ -1,0 +1,43 @@
+# Exported by three-d-stage
+newmtl concrete
+Kd 0.4793 0.4452 0.3813
+Ks 0.2000 0.2000 0.2000
+Ns 10
+d 1.0000
+
+newmtl accent_orange
+Kd 0.6939 0.1441 0.0242
+Ks 0.2000 0.2000 0.2000
+Ns 80
+d 1.0000
+
+newmtl dish_white
+Kd 0.8070 0.7758 0.7011
+Ks 0.2000 0.2000 0.2000
+Ns 60
+d 1.0000
+
+newmtl dark_steel
+Kd 0.0497 0.0612 0.0782
+Ks 0.2000 0.2000 0.2000
+Ns 80
+d 1.0000
+
+newmtl solar_panel
+Kd 0.0160 0.0369 0.0782
+Ks 0.2000 0.2000 0.2000
+Ns 130
+d 1.0000
+
+newmtl steel
+Kd 0.2051 0.2346 0.2789
+Ks 0.2000 0.2000 0.2000
+Ns 90
+d 1.0000
+
+newmtl rock
+Kd 0.2747 0.2462 0.1878
+Ks 0.2000 0.2000 0.2000
+Ns 0
+d 1.0000
+

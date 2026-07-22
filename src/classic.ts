@@ -134,7 +134,11 @@ for (const p of getProjects().filter((p) => !p.classicHidden)) {
   const card = el('article', 'c-project');
   const head = el('div', 'c-project-head');
   head.appendChild(el('h3', undefined, p.title));
-  head.appendChild(link('Visit →', p.url));
+  if (p.url) {
+    head.appendChild(link('Visit →', p.url));
+  } else {
+    head.appendChild(el('span', 'c-classified', 'Classified'));
+  }
   card.appendChild(head);
   card.appendChild(el('p', undefined, p.blurb));
   const chips = el('div', 'chips');
